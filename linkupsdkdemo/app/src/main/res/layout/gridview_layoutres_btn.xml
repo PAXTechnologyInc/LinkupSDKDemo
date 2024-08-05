@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/id_tv_cmd"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dp_50"
+    android:layout_gravity="center_vertical"
+    android:gravity="center"
+    android:background="#39C5BB"
+    android:textColor="#ffffff"
+    android:textSize="@dimen/sp_20"
+    android:textStyle="bold"
+    android:paddingLeft="@dimen/dp_5"
+    android:paddingRight="@dimen/dp_5">
+
+</TextView>

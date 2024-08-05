@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="2"
+    tools:context=".MainActivity" >
+
+    <Button
+        android:id="@+id/btn_device"
+        style="@style/blackBtn"
+        android:text="DeviceHelper"
+        android:textAllCaps="false"/>
+    <Button
+        android:id="@+id/btn_printer"
+        style="@style/blackBtn"
+        android:text="PrinterHelper"
+        android:textAllCaps="false"/>
+    <Button
+        android:id="@+id/btn_file"
+        style="@style/blackBtn"
+        android:text="FileHelper"
+        android:textAllCaps="false"/>
+    <Button
+        android:id="@+id/btn_scanner"
+        style="@style/blackBtn"
+        android:text="ScannerHelper"
+        android:textAllCaps="false"/>
+    <Button
+        android:id="@+id/btn_misc"
+        style="@style/blackBtn"
+        android:text="MiscHelper"
+        android:textAllCaps="false"/>
+</GridLayout>

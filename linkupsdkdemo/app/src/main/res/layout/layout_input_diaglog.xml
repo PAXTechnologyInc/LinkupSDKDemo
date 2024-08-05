@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/dp_400"
+    android:layout_height="@dimen/dp_200">
+
+    <EditText
+        android:id="@+id/txt_content"
+        style="@style/blackText"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_160"
+        android:layout_margin="@dimen/dp_10"
+        android:gravity="left|top"
+        android:inputType="textNoSuggestions"
+        />
+</LinearLayout>

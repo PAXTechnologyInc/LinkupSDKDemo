@@ -1,0 +1,28 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!--自定义样式-->
+    <style name="blackBtn">
+        <item name="android:background">@drawable/shape_main_button</item>
+        <item name="android:textSize">@dimen/sp_28</item>
+        <item name="android:layout_rowWeight" tools:targetApi="lollipop">1</item>
+        <item name="android:layout_columnWeight" tools:targetApi="lollipop">1</item>
+    </style>
+    <style name="redBtn">
+        <item name="android:layout_rowWeight" tools:targetApi="lollipop">1</item>
+        <item name="android:layout_columnWeight" tools:targetApi="lollipop">1</item>
+        <item name="android:background">@android:color/holo_red_dark</item>
+    </style>
+
+    <style name="blackText">
+        <item name="android:background">@drawable/shape_text_content</item>
+        <item name="android:textSize">@dimen/sp_14</item>
+    </style>
+</resources>

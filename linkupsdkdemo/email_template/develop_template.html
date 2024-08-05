@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Jenkins：${JOB_NAME} - 第${BUILD_NUMBER}次构建</title>
+    <style>
+        a {
+            text-decoration: none;
+        }
+
+        li {
+            margin: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <h3>本邮件由系统自动发出，请勿回复！</h3>
+    <hr>
+    <h2><b>各位项目成员，本次构建状态为：<span style="background-color:cyan; padding: 6px; border-radius: 10px;">${BUILD_STATUS}</span></b></h2>
+    <div>
+        <p style="color: green;"><b>构建信息：</b></p>
+        <ul>
+            <li>项目名称：${ENV, var="project_name"}</li>
+            <li>构建编号：${BUILD_NUMBER}</li>
+            <li>触发原因：<b>${BUILD_CAUSE}</b></li>
+            <li>构建日志：<a href="${BUILD_URL}console" style="color: blue">${BUILD_URL}console</a></li>
+            <li><b>构建详情：<a href="${PROJECT_URL}" style="color: blue">${PROJECT_URL}</a></b></li>
+            <li>工作空间：<a href="${BUILD_URL}ws">${BUILD_URL}ws</a></li>
+        </ul>
+    </div>
+    <hr>
+    <div>
+        <p style="color: green;"><b>提交历史：</b></p>
+        <ul>
+            ${CHANGES_SINCE_LAST_BUILD, format="<li>%d - [%a]: %m</li>"}
+        </ul>
+    </div>
+    <hr>
+    <div>
+        <p style="color: green;"><b>可视化平台：</b></p>
+        <h2 style="color: purple">SonarQube：<span style="background-color:cyan; padding: 6px; border-radius: 10px;">#alert_status</span></h2>
+        <table cellspacing="0">
+            <tr>
+                <td style="width: 120px; height: 60px; border: 1px solid; text-align: center; background-color: aquamarine;">Bug</td>
+                <td style="width: 120px; height: 60px; border: 1px solid; text-align: center; background-color: aquamarine;">异味</td>
+                <td style="width: 120px; height: 60px; border: 1px solid; text-align: center; background-color: red;">漏洞</td>
+            </tr>
+            <tr>
+                <td style="width: 120px; height: 60px; border: 1px solid; text-align: center;">#bugs</td>
+                <td style="width: 120px; height: 60px; border: 1px solid; text-align: center;">#code_smells</td>
+                <td style="width: 120px; height: 60px; border: 1px solid; text-align: center;">#vulnerabilities</td>
+            </tr>
+        </table>
+        <p>详情：<a href="#sonar_url" style="color: blue">#sonar_url</a></p>
+        <!-- <h2 style="color: purple">Dependency-Track：</h2>
+        <table cellspacing="0">
+            <tr>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center; background-color: aquamarine;">组件</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center; background-color: aquamarine;">关键</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center; background-color: aquamarine;">高危</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center; background-color: aquamarine;">中危</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center; background-color: aquamarine;">低危</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center; background-color: red">漏洞</td>
+            </tr>
+            <tr>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center;">#components</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center;">#critical</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center;">#high</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center;">#medium</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center;">#low</td>
+                <td style="width: 60px; height: 40px; border: 1px solid; text-align: center;">#dt_vulnerabilities</td>
+            </tr>
+        </table>
+        <p>详情：<a href="#dt_url" style="color: blue">#dt_url</a></p> -->
+        <hr>
+        <tr>
+            <p style="color: green;"><b>编译状态：</b></p>
+            <td>${JELLY_SCRIPT,template="html"}</td>
+        </tr>
+    </div>
+</body>
+
+</html>
+

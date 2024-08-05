@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/id_tv_cmd"
+    android:layout_width="match_parent"
+    android:layout_height="42dp"
+    android:layout_gravity="center_vertical"
+    android:background="#39C5BB"
+    android:gravity="center"
+    android:textColor="#ffffff"
+    android:textSize="14sp"
+    android:textStyle="bold"
+    android:paddingLeft="3dp"
+    android:paddingRight="3dp">
+</TextView>

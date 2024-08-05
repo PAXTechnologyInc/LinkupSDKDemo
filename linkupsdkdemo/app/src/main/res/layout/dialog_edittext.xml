@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_edit_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <EditText
+        android:id="@+id/item_ed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="/storage/emulated/0/LinkUpSDKDemo/test.file"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:layout_margin="@dimen/dp_20"
+        android:textSize="@dimen/sp_16"
+        />
+</LinearLayout>

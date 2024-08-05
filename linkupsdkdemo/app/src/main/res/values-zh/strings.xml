@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">LinkUpSDKDemo</string>
+    <string name="online_device_list">在线设备列表</string>
+    <string name="selected_device">已选设备:</string>
+    <string name="record_device">录制设备:</string>
+    <string name="play_device">播放设备:</string>
+    <string name="selected_file">已选文件:</string>
+    <string name="select_file">选择文件</string>
+    <string name="select_target_file">选择传输目标路径</string>
+    <string name="customized_record_ui">定制录制界面</string>
+    <string name="customized_play_ui">定制播放界面</string>
+    <string name="foreground_camera">前置摄像头</string>
+    <string name="input_target_file_title">输入带文件名的目标文件路径</string>
+    <string name="input_exchange_content">输入发送内容:</string>
+    <string name="input_print_content">输入打印的内容:</string>
+    <string name="sure">确定</string>
+    <string name="cancel">取消</string>
+    <string name="Printer_list">打印机列表:</string>
+    <string name="Scanner_list">扫描枪列表:</string>
+    <string name="Component_list">打印机/扫描枪列表:</string>
+    <string name="File_type">文件类型:</string>
+    <string name="selected_target_file">目标文件:</string>
+    <string name="uncheck">取消选中</string>
+</resources>
