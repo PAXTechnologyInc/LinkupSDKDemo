@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.pax.commonlib.file.FileUtils;
 import com.pax.linkdata.deviceinfo.component.ComponentBase;
+import com.pax.linkupsdk.demo.module.FeaturesFragment;
 import com.pax.linkupsdk.demo.module.MiscFragment;
 import com.pax.util.LogUtil;
 import com.pax.linkupsdk.demo.module.ScannerFragment;
@@ -366,6 +367,10 @@ public class HomeActivity extends FragmentActivity implements RecyclerViewAdapte
                 findViewById(R.id.layout_select_file).setVisibility(View.VISIBLE);
                 findViewById(R.id.btn_select_target_file).setVisibility(View.GONE);
                 replaceFragment(new MiscFragment(HomeActivity.this));
+                break;
+            case Constant.DEV_CON:
+                findViewById(R.id.layout_select_device).setVisibility(View.GONE);
+                replaceFragment(new FeaturesFragment());
                 break;
             default:
                 break;
