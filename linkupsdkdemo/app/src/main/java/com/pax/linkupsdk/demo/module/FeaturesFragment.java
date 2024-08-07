@@ -28,8 +28,8 @@ public class FeaturesFragment extends Fragment {
         buttonBonus = view.findViewById(R.id.buttonBonus);
 
         buttonPOS.setOnClickListener(v -> showFragment(new PosFragment(getContext())));
-        buttonAD.setOnClickListener(v -> showFragment(new AdFragment()));
-        buttonBonus.setOnClickListener(v -> showFragment(new BonusFragment()));
+        buttonAD.setOnClickListener(v -> showFragment(new AdFragment(getContext())));
+        buttonBonus.setOnClickListener(v -> showFragment(new BonusFragment(getContext())));
 
         // 默认显示第一个Fragment
         if (savedInstanceState == null) {
