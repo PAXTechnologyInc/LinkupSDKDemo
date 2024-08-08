@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- GridView for functionality -->
     <GridView
         android:id="@+id/gv_function"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:horizontalSpacing="@dimen/dp_5"
         android:numColumns="3"
-        android:verticalSpacing="@dimen/dp_5"
         android:paddingTop="@dimen/dp_5"
+        android:paddingRight="@dimen/dp_5"
         android:paddingBottom="@dimen/dp_5"
-        android:paddingRight="@dimen/dp_5">
-    </GridView>
+        android:verticalSpacing="@dimen/dp_5" />
 
-</LinearLayout>
+    <!-- Fullscreen overlay FrameLayout -->
+    <FrameLayout
+        android:id="@+id/progressOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#DDDDDDDD"
+        android:visibility="gone"> <!-- Semi-transparent black background -->
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true" />
+    </FrameLayout>
+
+</FrameLayout>
