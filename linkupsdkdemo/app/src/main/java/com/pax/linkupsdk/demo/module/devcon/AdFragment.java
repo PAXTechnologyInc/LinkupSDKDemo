@@ -7,10 +7,13 @@ import static com.pax.linkupsdk.demo.ViewLog.addLog;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,19 +38,22 @@ import com.pax.linkdata.cmd.channel.ExchangeDataResponseContent;
 import com.pax.linkupsdk.demo.DemoApplication;
 import com.pax.linkupsdk.demo.R;
 import com.pax.linkupsdk.demo.WorkExecutor;
+import com.pax.util.FileUtils;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 public class AdFragment extends Fragment {
     private final Context mContext;
+    private String mLastReceivedFile;
 
     // list of the names of available functionalities
     private static final String[] mListInfo = new String[]{
             "registerDataListener",
             "unregisterDataListener",
             "exchangeData",
-            "sendFile"
+            "sendFile",
+            "openFile"
     };
 
     public AdFragment(final Context context) {
@@ -82,6 +88,9 @@ public class AdFragment extends Fragment {
                 case 3:
                     WorkExecutor.execute(AdFragment.this::sendMedia);
                     break;
+                case 4:
+                    openFile();
+                    break;
                 default:
                     break;
             }
@@ -90,9 +99,17 @@ public class AdFragment extends Fragment {
         return fragmentView;
     }
 
+    /**
+     * Create a data listener for exchanging data between linkup devices
+     * @return an instance of IExchangeDataListener
+     */
     private IExchangeDataListener getDataListener() {
         return (ExchangeDataRequestContent requestContent) -> {
             addLog("received content:" + requestContent.getStringArg1());
+            if (!TextUtils.isEmpty(requestContent.getStringArg2())) {
+                addLog(requestContent.getStringArg2());
+                mLastReceivedFile = requestContent.getStringArg2();
+            }
             ExchangeDataResponseContent responseContent = new ExchangeDataResponseContent();
             responseContent.setStringArg1("success");
             return responseContent;
@@ -101,6 +118,10 @@ public class AdFragment extends Fragment {
 
     private final IExchangeDataListener dataListener = getDataListener();
 
+    /**
+     * Register a listener to observe data transmitted from another linkup device. This is a required
+     * step in the receiving device before doing exchangeData task in the originating device.
+     */
     private void registerDataListener() {
         try {
             MiscHelper.getInstance(mContext).registerDataListener(getPackageName(mContext), dataListener);
@@ -111,6 +132,9 @@ public class AdFragment extends Fragment {
         }
     }
 
+    /**
+     * Un-register the registered data listener
+     */
     private void unregisterDataListener() {
         try {
             MiscHelper.getInstance(mContext).unregisterDataListener(getPackageName(mContext), dataListener);
@@ -126,6 +150,7 @@ public class AdFragment extends Fragment {
      * Require to do registerDataListener() on the destination device before exchanging data.
      */
     private void exchangeData() {
+        // check if a target device is selected to which the data is sent
         if (checkNoDevice()) {
             return;
         }
@@ -210,18 +235,62 @@ public class AdFragment extends Fragment {
                     mCountDownLatch.countDown();
                     // Show the success message to the message area at the bottom half of the right pane
                     addLog("Transfer completed. File size:" + totalLen);
+
+                    /* Send a message to the destination device to inform of the file transfer is completed and the
+                     * action to see the result */
+                    try {
+                        ExchangeDataRequestContent requestContent = new ExchangeDataRequestContent();
+                        requestContent.setStringArg1("Press \"openFile\" button to open:");
+                        requestContent.setStringArg2(remoteFile);
+                        requestContent.setTargetOwner(getPackageName(mContext));
+                        ExchangeDataResponseContent responseContent = MiscHelper.getInstance(mContext).exchangeData(DemoApplication.getSelectedDeviceList().get(0).getDeviceID(), requestContent);
+                        addLog("exchangeData succeeded, response:[" + responseContent.getStringArg1() + "]");
+                    } catch (LinkException e) {
+                        e.printStackTrace();
+                        // Show a message to the message area on the bottom half of the right pane
+                        addErrLog("exchangeData failed", e);
+                    }
                 }
             });
             mCountDownLatch.await();
         } catch (LinkException e) {
             e.printStackTrace();
             // Show a message to the message area on the bottom half of the right pane
-            addErrLog("install failed", e);
+            addErrLog("File transfer failed", e);
         } catch (InterruptedException e1) {
             e1.printStackTrace();
             // Show a message to the message area on the bottom half of the right pane
-            addLog("install failed");
+            addLog("File transfer failed");
             Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Open and play the recently received image (JPG) or video file (MP4)
+     */
+    private void openFile() {
+        if (TextUtils.isEmpty(mLastReceivedFile)) {
+            addLog("No file sent");
+            return;
+        }
+
+        Uri mediaUri = Uri.parse("file://" + mLastReceivedFile);
+        String ext = FileUtils.getFileExtension(mLastReceivedFile);
+
+        // open and play the image or video file
+        if (ext.equalsIgnoreCase("jpg") || ext.equalsIgnoreCase("mp4")) {
+            addLog("open " + mLastReceivedFile);
+            Intent intent = new Intent();
+            intent.setAction(android.content.Intent.ACTION_VIEW);
+            if (ext.equalsIgnoreCase("jpg"))
+                intent.setDataAndType(mediaUri, "image/jpg");
+            else
+                intent.setDataAndType(mediaUri, "video/mp4");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.startActivity(intent);
+        }
+        else {
+            addLog("Can open only jpg and mp4 files");
         }
     }
 
