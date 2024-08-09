@@ -1,6 +1,7 @@
 package com.pax.linkupsdk.demo.module.devcon;
 
 import static com.pax.linkupsdk.demo.Tools.checkNoDevice;
+import static com.pax.linkupsdk.demo.ViewLog.addErrLog;
 import static com.pax.linkupsdk.demo.ViewLog.addLog;
 
 import android.content.Context;
@@ -17,42 +18,53 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.pax.egarden.devicekit.MiscHelper;
 import com.pax.linkdata.LinkDevice;
+import com.pax.linkdata.cmd.LinkException;
 import com.pax.linkupsdk.demo.DemoApplication;
 import com.pax.linkupsdk.demo.R;
+import com.pax.linkupsdk.demo.WorkExecutor;
 
 public class BonusFragment extends Fragment {
+    private final Context mContext;
+
+    // list of the names of available functionalities
     private static final String[] mListInfo = new String[]{
-            "getIPAddress"
+            "rebootDevice",
+            "shutdownDevice",
+            "getDeviceInfo"
     };
 
-    public BonusFragment(final Context context) {
+    public BonusFragment(Context context) {
+        this.mContext = context;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // LinearLayout with select source file and target file buttons on the left pane
+        // Hide the "Select file" and "Select Target file" buttons on the left pane
         requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.GONE);
-        // show selected device on the top of right pane
+        // Show the section of "Selected devices" on the top of the right pane
         requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
-        // show selected file on the top of right pane
+        // Hide the section of "Selected files" on the top of the right pane
         requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.GONE);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-//        mDeviceHelper = DeviceHelper.getInstance(mContext);
+        // Set up the grid view to list the functionalities
         View fragmentView = inflater.inflate(R.layout.fragment_right, container, false);
         GridView gridView = fragmentView.findViewById(R.id.gv_function);
         gridView.setAdapter(new ArrayAdapter<>(requireActivity(), R.layout.gridview_layoutres_btn, mListInfo));
+        // respond to the user's click on the buttons
         gridView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             switch (position) {
                 case 0:
-                    getIPAddress();
+                    WorkExecutor.execute(BonusFragment.this::rebootDevice);
                     break;
                 case 1:
+                    getDeviceInfo();
                     break;
                 case 2:
                     break;
@@ -64,21 +76,61 @@ public class BonusFragment extends Fragment {
         return fragmentView;
     }
 
-    private void getIPAddress() {
+    /*
+     * Connect and reboot the selected device
+     */
+    private void rebootDevice() {
+        // Show a message to remind user to select a device
         if (checkNoDevice()) {
             return;
         }
 
+        try {
+            LinkDevice linkDevice = DemoApplication.getSelectedDeviceList().get(0);
+            if (!TextUtils.isEmpty(DemoApplication.getSelectedComponentID())) {
+                linkDevice.setCurrentComponentID(DemoApplication.getSelectedComponentID());
+            } else {
+                linkDevice.setCurrentComponentID("");
+            }
+
+            // Show a message to the message area on the bottom half of the right pane
+            addLog(String.format("Reboot %1$s(ID:%2$s)", linkDevice.getDeviceName(), linkDevice.getDeviceID()));
+
+            // Call the SDK API to do the reboot
+            MiscHelper.getInstance(mContext).reboot(linkDevice.getDeviceID(), linkDevice.getCurrentComponentID());
+            // Show the success message to the message area on the bottom half of the right pane
+            addLog("Reboot succeeded");
+        } catch (LinkException e) {
+            e.printStackTrace();
+            // Show the failure message
+            addErrLog("Reboot failed", e);
+        }
+    }
+
+    /*
+     * Retrieve and display the information of the selected device
+     */
+    private void getDeviceInfo() {
+        // Show a message to remind user to select a device
+        if (checkNoDevice()) {
+            return;
+        }
+
+        // Retrieve the selected device
         final LinkDevice linkDevice = DemoApplication.getSelectedDeviceList().get(0);
+        // Set the component ID to the selected device (only scanner and printer have component ID)
         if (!TextUtils.isEmpty(DemoApplication.getSelectedComponentID())) {
             linkDevice.setCurrentComponentID(DemoApplication.getSelectedComponentID());
         } else {
             linkDevice.setCurrentComponentID("");
         }
-
+        // Show a message to the message area on the bottom half of the right pane
         addLog(String.format("Retrieve Device Info: %1$s", toString(linkDevice)));
     }
 
+    /*
+     * Construct a string to contain the information of the specified LinkDevice instance
+     */
     private String toString(LinkDevice linkDevice) {
         return "{" +
                 "deviceID='" + linkDevice.getDeviceID() + '\'' +
@@ -89,6 +141,7 @@ public class BonusFragment extends Fragment {
                 ", isUserDefinedCenterNode='" + linkDevice.isUserDefinedCenterNode() + '\'' +
                 ", linkIP='" + linkDevice.getLinkIP() + '\'' +
                 ", firmwareVersion='" + linkDevice.getFirmwareVersion() + '\'' +
+                ", currentComponentID='" + linkDevice.getCurrentComponentID() + '\'' +
                 '}';
     }
 }

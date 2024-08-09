@@ -26,14 +26,14 @@ import com.pax.linkdata.cmd.LinkException;
 import com.pax.linkupsdk.demo.DemoApplication;
 import com.pax.linkupsdk.demo.R;
 import com.pax.linkupsdk.demo.WorkExecutor;
-import com.pax.util.LogUtil;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 public class AdFragment extends Fragment {
     private final Context mContext;
-    private DeviceHelper mDeviceHelper;
+
+    // list of the names of available functionalities
     private static final String[] mListInfo = new String[]{
             "sendFile"
     };
@@ -45,23 +45,25 @@ public class AdFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // LinearLayout with select source file and target file buttons on the left pane
+        // Show the section enclosing "Select file" and "Select target file" buttons on the left pane
         requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.VISIBLE);
-        // only show the button for selecting source file on the left pane
+        // Hide the "Select target file button but let only the "Select file" button show on the left pane
         requireActivity().findViewById(R.id.btn_select_target_file).setVisibility(View.GONE);
-        // show selected device on the top of right pane
+        // Show the "Selected devices" on the top of right pane
         requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
-        // show selected file on the top of right pane
+        // Show the "Selected files" on the top of right pane
         requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.VISIBLE);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        mDeviceHelper = DeviceHelper.getInstance(requireContext());
+        // Set up the grid view to list the functionalities
         View fragmentView = inflater.inflate(R.layout.fragment_right, container, false);
         GridView gridView = fragmentView.findViewById(R.id.gv_function);
         gridView.setAdapter(new ArrayAdapter<>(requireActivity(), R.layout.gridview_layoutres_btn, mListInfo));
+
+        // Respond to the user's click on the buttons
         gridView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             switch (position) {
                 case 0:
@@ -80,47 +82,61 @@ public class AdFragment extends Fragment {
     }
 
     private void sendMedia() {
+        // check if a target device is selected to which the file is sent
         if (checkNoDevice()) {
             return;
         }
+        // check if a file is selected to send
         if (checkNoFile()) {
             return;
         }
 
         try {
+            // Get the selected target device
             final LinkDevice selectedDevice = DemoApplication.getSelectedDeviceList().get(0);
-            final LinkDevice selfDevice = mDeviceHelper.getSelfDeviceInfo();
-            String localfile = DemoApplication.getSelectedFileList().get(0);
-            String remoteFile;
+            // Get the linked device that the file is located
+            final LinkDevice selfDevice = DeviceHelper.getInstance(mContext).getSelfDeviceInfo();
 
+            // Get the path of the selected file
+            String localfile = DemoApplication.getSelectedFileList().get(0);
+
+            // define the remote file path
+            String remoteFile;
             if (DemoApplication.getSelectedDeviceList().get(0).getFirmwareVersion().startsWith("Android")) {
                 remoteFile = Environment.getExternalStorageDirectory().toString() + File.separatorChar + "LinkUpSDKDemo" + File.separatorChar + (new File(localfile)).getName();
             } else {
                 remoteFile = (new File(localfile)).getName();
             }
-            addLog(String.format("send selected file from %1$s to %2$s/%3$s", selfDevice.getDeviceName(),
+
+            // Show a message to the message area on the bottom half of the right pane
+            addLog(String.format("Send selected file from %1$s to %2$s/%3$s", selfDevice.getDeviceName(),
                                  selectedDevice.getDeviceName(), remoteFile));
-            LogUtil.d("remoteFile:" + remoteFile + " filetype:" + DemoApplication.getFileType());
 
             CountDownLatch mCountDownLatch = new CountDownLatch(1);
+            // Call an SDK API to send file from the starting device to the selected target device
             FileHelper.getInstance(mContext).transferFile(selectedDevice.getDeviceID(), localfile, remoteFile, true, (totalLen, offset, status) -> {
+                // The callback actions after the file transfer fails, is still in progress, or is completed
                 if (status < 0) {
+                    // Show the failure message to the message area at the bottom half of the right pane
                     addLog("Transfer file failed");
                     mCountDownLatch.countDown();
                 } else if (status > 0) {
+                    // Show the progress to the message area at the bottom half of the right pane
                     addLog("Transferring...,  already transferred:" + offset + ", left:" + (totalLen - offset));
                 } else {
                     mCountDownLatch.countDown();
+                    // Show the success message to the message area at the bottom half of the right pane
                     addLog("Transfer completed. File size:" + totalLen);
                 }
             });
             mCountDownLatch.await();
-//            addLog("Open media");
         } catch (LinkException e) {
             e.printStackTrace();
+            // Show a message to the message area on the bottom half of the right pane
             addErrLog("install failed", e);
         } catch (InterruptedException e1) {
             e1.printStackTrace();
+            // Show a message to the message area on the bottom half of the right pane
             addLog("install failed");
             Thread.currentThread().interrupt();
         }

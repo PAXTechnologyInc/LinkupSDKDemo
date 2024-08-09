@@ -1,10 +1,11 @@
 package com.pax.linkupsdk.demo.module;
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-//import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -18,6 +19,12 @@ public class FeaturesFragment extends Fragment {
 
     private Button buttonPOS, buttonAD, buttonBonus;
 
+    private final Context mContext;
+
+    public FeaturesFragment(Context context) {
+        this.mContext = context;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -27,12 +34,34 @@ public class FeaturesFragment extends Fragment {
         buttonAD = view.findViewById(R.id.buttonAD);
         buttonBonus = view.findViewById(R.id.buttonBonus);
 
-        buttonPOS.setOnClickListener(v -> showFragment(new PosFragment(getContext())));
-        buttonAD.setOnClickListener(v -> showFragment(new AdFragment(getContext())));
-        buttonBonus.setOnClickListener(v -> showFragment(new BonusFragment(getContext())));
+        // Different colors for the function tabs
+        ColorStateList currentButtonColorState = ColorStateList.valueOf(getResources().getColor(R.color.defaultColor));
+        ColorStateList otherButtonColorState = ColorStateList.valueOf(getResources().getColor(R.color.inactive_color));
+
+        // Set the listener for the button click
+        buttonPOS.setOnClickListener(v -> {
+            // Set the default color for the
+            v.setBackgroundTintList(currentButtonColorState);
+            buttonAD.setBackgroundTintList(otherButtonColorState);
+            buttonBonus.setBackgroundTintList(otherButtonColorState);
+            showFragment(new PosFragment(getContext()));
+        });
+        buttonAD.setOnClickListener(v -> {
+            v.setBackgroundTintList(currentButtonColorState);
+            buttonPOS.setBackgroundTintList(otherButtonColorState);
+            buttonBonus.setBackgroundTintList(otherButtonColorState);
+            showFragment(new AdFragment(mContext));
+        });
+        buttonBonus.setOnClickListener(v -> {
+            v.setBackgroundTintList(currentButtonColorState);
+            buttonPOS.setBackgroundTintList(otherButtonColorState);
+            buttonAD.setBackgroundTintList(otherButtonColorState);
+            showFragment(new BonusFragment(mContext));
+        });
 
         // 默认显示第一个Fragment
         if (savedInstanceState == null) {
+            buttonPOS.setBackgroundTintList(currentButtonColorState);
             showFragment(new PosFragment(getContext()));
         }
 
