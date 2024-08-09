@@ -40,6 +40,12 @@ public class FeaturesFragment extends Fragment {
 
         // Set the listener for the button click
         buttonPOS.setOnClickListener(v -> {
+            // Hide the "Select file" and "Select Target file" buttons on the left pane
+            requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.GONE);
+            // Show the section of "Selected devices" on the top of the right pane
+            requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.GONE);
+            // Hide the section of "Selected files" on the top of the right pane
+            requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.GONE);
             // Set the default color for the
             v.setBackgroundTintList(currentButtonColorState);
             buttonAD.setBackgroundTintList(otherButtonColorState);
@@ -47,19 +53,33 @@ public class FeaturesFragment extends Fragment {
             showFragment(new PosFragment(getContext()));
         });
         buttonAD.setOnClickListener(v -> {
+            // Hide the "Select file" and "Select Target file" buttons on the left pane
+            requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.VISIBLE);
+            // Hide the "Select target file button but let only the "Select file" button show on the left pane
+            requireActivity().findViewById(R.id.btn_select_target_file).setVisibility(View.GONE);
+            // Show the section of "Selected devices" on the top of the right pane
+            requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
+            // Hide the section of "Selected files" on the top of the right pane
+            requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.VISIBLE);
             v.setBackgroundTintList(currentButtonColorState);
             buttonPOS.setBackgroundTintList(otherButtonColorState);
             buttonBonus.setBackgroundTintList(otherButtonColorState);
             showFragment(new AdFragment(mContext));
         });
         buttonBonus.setOnClickListener(v -> {
+            // Hide the "Select file" and "Select Target file" buttons on the left pane
+            requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.GONE);
+            // Show the section of "Selected devices" on the top of the right pane
+            requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
+            // Hide the section of "Selected files" on the top of the right pane
+            requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.GONE);
             v.setBackgroundTintList(currentButtonColorState);
             buttonPOS.setBackgroundTintList(otherButtonColorState);
             buttonAD.setBackgroundTintList(otherButtonColorState);
             showFragment(new BonusFragment(mContext));
         });
 
-        // 默认显示第一个Fragment
+        // Set default to PosFragment
         if (savedInstanceState == null) {
             buttonPOS.setBackgroundTintList(currentButtonColorState);
             showFragment(new PosFragment(getContext()));

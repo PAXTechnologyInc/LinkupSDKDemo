@@ -31,7 +31,6 @@ public class BonusFragment extends Fragment {
     // list of the names of available functionalities
     private static final String[] mListInfo = new String[]{
             "rebootDevice",
-            "shutdownDevice",
             "getDeviceInfo"
     };
 
@@ -42,12 +41,6 @@ public class BonusFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Hide the "Select file" and "Select Target file" buttons on the left pane
-        requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.GONE);
-        // Show the section of "Selected devices" on the top of the right pane
-        requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
-        // Hide the section of "Selected files" on the top of the right pane
-        requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.GONE);
     }
 
     @Override

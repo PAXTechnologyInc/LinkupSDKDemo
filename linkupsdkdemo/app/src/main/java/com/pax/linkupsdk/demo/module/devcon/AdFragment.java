@@ -5,7 +5,10 @@ import static com.pax.linkupsdk.demo.Tools.checkNoFile;
 import static com.pax.linkupsdk.demo.ViewLog.addErrLog;
 import static com.pax.linkupsdk.demo.ViewLog.addLog;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
@@ -13,7 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,8 +26,12 @@ import androidx.fragment.app.Fragment;
 
 import com.pax.egarden.devicekit.DeviceHelper;
 import com.pax.egarden.devicekit.FileHelper;
+import com.pax.egarden.devicekit.MiscHelper;
+import com.pax.linkdata.IExchangeDataListener;
 import com.pax.linkdata.LinkDevice;
 import com.pax.linkdata.cmd.LinkException;
+import com.pax.linkdata.cmd.channel.ExchangeDataRequestContent;
+import com.pax.linkdata.cmd.channel.ExchangeDataResponseContent;
 import com.pax.linkupsdk.demo.DemoApplication;
 import com.pax.linkupsdk.demo.R;
 import com.pax.linkupsdk.demo.WorkExecutor;
@@ -35,6 +44,9 @@ public class AdFragment extends Fragment {
 
     // list of the names of available functionalities
     private static final String[] mListInfo = new String[]{
+            "registerDataListener",
+            "unregisterDataListener",
+            "exchangeData",
             "sendFile"
     };
 
@@ -45,14 +57,6 @@ public class AdFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Show the section enclosing "Select file" and "Select target file" buttons on the left pane
-        requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.VISIBLE);
-        // Hide the "Select target file button but let only the "Select file" button show on the left pane
-        requireActivity().findViewById(R.id.btn_select_target_file).setVisibility(View.GONE);
-        // Show the "Selected devices" on the top of right pane
-        requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
-        // Show the "Selected files" on the top of right pane
-        requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -67,11 +71,16 @@ public class AdFragment extends Fragment {
         gridView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             switch (position) {
                 case 0:
-                    WorkExecutor.execute(AdFragment.this::sendMedia);
+                    registerDataListener();
                     break;
                 case 1:
+                    unregisterDataListener();
                     break;
                 case 2:
+                    exchangeData();
+                    break;
+                case 3:
+                    WorkExecutor.execute(AdFragment.this::sendMedia);
                     break;
                 default:
                     break;
@@ -79,6 +88,80 @@ public class AdFragment extends Fragment {
         });
 
         return fragmentView;
+    }
+
+    private IExchangeDataListener getDataListener() {
+        return (ExchangeDataRequestContent requestContent) -> {
+            addLog("received content:" + requestContent.getStringArg1());
+            ExchangeDataResponseContent responseContent = new ExchangeDataResponseContent();
+            responseContent.setStringArg1("success");
+            return responseContent;
+        };
+    }
+
+    private final IExchangeDataListener dataListener = getDataListener();
+
+    private void registerDataListener() {
+        try {
+            MiscHelper.getInstance(mContext).registerDataListener(getPackageName(mContext), dataListener);
+            addLog("registerListener(" + getPackageName(mContext) + ") success");
+        } catch (LinkException e) {
+            e.printStackTrace();
+            addErrLog("registerListener failed", e);
+        }
+    }
+
+    private void unregisterDataListener() {
+        try {
+            MiscHelper.getInstance(mContext).unregisterDataListener(getPackageName(mContext), dataListener);
+            addLog("unregisterListener(" + getPackageName(mContext) + ") success");
+        } catch (LinkException e) {
+            e.printStackTrace();
+            addErrLog("unregisterListener failed", e);
+        }
+    }
+
+    /**
+     * Exchange data between 2 linkup devices.
+     * Require to do registerDataListener() on the destination device before exchanging data.
+     */
+    private void exchangeData() {
+        if (checkNoDevice()) {
+            return;
+        }
+
+        DemoApplication.getSelectedDeviceList().get(0).setCurrentComponentID("");
+
+        //显示内容对话框
+        AlertDialog.Builder inputDialog = new AlertDialog.Builder(mContext);
+        inputDialog.setTitle(R.string.input_exchange_content);
+        View view = View.inflate(mContext, R.layout.layout_input_diaglog, null);
+        inputDialog.setView(view);
+        EditText editText = view.findViewById(R.id.txt_content);
+        editText.setText(DemoApplication.getTargetFilePath());
+        inputDialog.setPositiveButton(R.string.sure, (dialog, which) -> {
+            if (editText.getText().length() == 0) {
+                Toast.makeText(mContext, "Please input effective content", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            WorkExecutor.execute(() -> {
+                try {
+                    ExchangeDataRequestContent requestContent = new ExchangeDataRequestContent();
+                    requestContent.setStringArg1(editText.getText().toString());
+                    requestContent.setTargetOwner(getPackageName(mContext));
+                    ExchangeDataResponseContent responseContent = MiscHelper.getInstance(mContext).exchangeData(DemoApplication.getSelectedDeviceList().get(0).getDeviceID(), requestContent);
+                    addLog("exchangeData success, response:[" + responseContent.getStringArg1() + "]");
+                } catch (LinkException e) {
+                    e.printStackTrace();
+                    addErrLog("exchangeData failed", e);
+                }
+            });
+
+            dialog.dismiss();
+        }).setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss()).show();
+
+        editText.setHeight(200);
     }
 
     private void sendMedia() {
@@ -140,5 +223,17 @@ public class AdFragment extends Fragment {
             addLog("install failed");
             Thread.currentThread().interrupt();
         }
+    }
+
+    private static synchronized String getPackageName(Context context) {
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageInfo(
+                    context.getPackageName(), 0);
+            return packageInfo.packageName;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
