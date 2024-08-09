@@ -3,6 +3,8 @@ package com.pax.linkupsdk.demo.module.devcon;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -30,6 +32,8 @@ import com.pax.linkupsdk.demo.R;
 import com.pax.egarden.devicekit.DeviceHelper;
 import com.pax.linkdata.LinkDevice;
 import com.pax.linkdata.cmd.LinkException;
+import com.pax.linkupsdk.demo.module.devcon.models.Item;
+import com.pax.linkupsdk.demo.module.devcon.models.TransDetail;
 import com.pax.poslink.CommSetting;
 import com.pax.poslink.PaymentRequest;
 import com.pax.poslink.PaymentResponse;
@@ -56,7 +60,8 @@ public class PosFragment extends Fragment {
     private FrameLayout progressOverlay;
     private DeviceHelper mDeviceHelper;
     private PrinterHelper mPrinterHelper;
-
+    CartListener cartListener;
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
     private static final String[] mListInfo = new String[]{
             "Detect Devices",
             "Scan SKU",
@@ -216,36 +221,6 @@ public class PosFragment extends Fragment {
         }
     }
 
-//    private LinkDevice getA3700() {
-//        try {
-//            List<LinkDevice> linkDeviceList = mDeviceHelper.queryOnlineDeviceList();
-//            return linkDeviceList.stream()
-//                    .filter(linkDevice -> "A3700".equalsIgnoreCase(linkDevice.getDeviceModel()))
-//                    .findFirst()
-//                    .orElse(null);
-//        } catch (LinkException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-//
-//    private Scanner getT3320() {
-//        LinkDevice thisDevice;
-//        try {
-//            thisDevice = mDeviceHelper.getSelfDeviceInfo();
-//            List<Scanner> scannerList = thisDevice.getScannerList();
-//            if (scannerList.isEmpty()) {
-//                addLog("Please connect scanner first");
-//                return null;
-//            }
-//            return scannerList.stream()
-//                    .filter(scanner -> "T3320".equalsIgnoreCase(scanner.getModel()))
-//                    .findFirst()
-//                    .orElse(null);
-//        } catch (LinkException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
     private <T> T findDeviceModel(List<T> devices, String modelName, Function<T, String> getModelFunc) {
         return devices.stream()
                 .filter(device -> modelName.equalsIgnoreCase(getModelFunc.apply(device)))
@@ -289,62 +264,6 @@ public class PosFragment extends Fragment {
             throw new RuntimeException(e);
         }
     }
-
-//    private void pay() {
-//        System.out.println("Pressed pay btn");
-//
-//        LinkDevice a3700 = getA3700();
-//        if (a3700 == null) {
-//            addLog("No A3700 detected.");
-//            return;
-//        }
-//
-//        String ip = a3700.getLinkIP();
-//        if (ip.isEmpty()) {
-//            addLog("No IP found");
-//            return;
-//        }
-//
-//        new Thread(() -> {
-//            // init poslink
-//            PosLink poslink = POSLinkCreator.createPoslink(requireContext());
-//            CommSetting commSetting = new CommSetting();
-//            commSetting.setType(CommSetting.TCP);
-//            commSetting.setDestIP(ip);
-//            commSetting.setDestPort("10009");
-//            commSetting.setTimeOut("60000");
-//            commSetting.setEnableProxy(true);
-//            poslink.SetCommSetting(commSetting);
-//
-//            // init request
-//            PaymentRequest request = new PaymentRequest();
-//            double amount = 0;
-//            for (int i = 0; i < scannedItems.size(); i++) {
-//                amount += Double.parseDouble(scannedItems.get(i).price);
-//            }
-//            request.Amount = String.valueOf((int) (amount * 100));
-//            request.TenderType = request.ParseTenderType(EDCType.CREDIT);
-//            request.TransType = request.ParseTransType(TransType.SALE);
-//            request.TipAmt = "0";
-//            request.TaxAmt = "0";
-//            Random random = new Random();
-//            long min = 100_000_000_000L; // Minimum 12-digit number
-//            long max = 999_999_999_999L; // Maximum 12-digit number
-//            long range = max - min + 1;
-//            long refNum = min + (long) (random.nextDouble() * range);
-//            request.ECRRefNum = String.valueOf(refNum);
-//            poslink.PaymentRequest = request;
-//
-//            // transact
-//            ProcessTransResult result = poslink.ProcessTrans();
-//            Gson gson = new Gson();
-//            addLog(gson.toJson(result));
-//            if ("OK".equalsIgnoreCase(result.Code.name())) {
-//                // todo: print receipt
-//                scannedItems.clear();
-//            }
-//        }).start();
-//    }
 
     private void showProgressOverlay() {
         getActivity().runOnUiThread(() -> progressOverlay.setVisibility(View.VISIBLE));
@@ -455,11 +374,10 @@ public class PosFragment extends Fragment {
             thisDevice.setCurrentComponentID(scanner.getSn());
             System.out.println("device id:" + thisDevice.getDeviceID() + ", scanner id:" + scanner.getSn());
 
-
             mScannerHelper.startScan(thisDevice.getDeviceID(), thisDevice.getCurrentComponentID(), 10000, new ScannerDataListener() {
                 @Override
                 public void onMessage(int code, String message, String listenerOwner) {
-                    handleScanResult(code, message, listenerOwner);
+                    mainHandler.post(() -> handleScanResult(code, message, listenerOwner));
                 }
             });
             addLog("startScan initiated.");
@@ -469,96 +387,25 @@ public class PosFragment extends Fragment {
     }
 
     private void handleScanResult(int code, String message, String listenerOwner) {
+        System.out.println("coonst map: " + SKU_MAP);
         Item item = SKU_MAP.getOrDefault(message, null);
         if (item != null) {
             addLog("Item scanned: " + item);
             scannedItems.add(item);
+            cartListener.onItemAdded(item);
         } else {
             addLog("No item matched for scanned code: " + message);
         }
     }
-}
-
-class Item {
-    String name;
-    String description;
-    String price;
-    String sku;
-
-    public Item(String name, String description, String price, String sku) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.sku = sku;
-    }
 
     @Override
-    public String toString() {
-        return "Item{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", price='" + price + '\'' +
-                ", sku='" + sku + '\'' +
-                '}';
-    }
-}
-
-class TransDetail {
-    String total;
-    String resultCode;
-    String resultMsg;
-    String approvedAmt;
-    String account;
-    String cardType;
-    String hostCode;
-    String refNum;
-    String timeStamp;
-    List<Item> items;
-
-
-    public TransDetail(String total, String resultCode, String resultMsg, String approvedAmt, String account, String cardType, String hostCode, String refNum, String timeStamp, List<Item> items) {
-        this.total = total;
-        this.resultCode = resultCode;
-        this.resultMsg = resultMsg;
-        this.approvedAmt = approvedAmt;
-        this.account = account;
-        this.cardType = cardType;
-        this.hostCode = hostCode;
-        this.refNum = refNum;
-        this.timeStamp = timeStamp;
-        this.items = items;
-    }
-
-    public TransDetail(String total, List<Item> items) {
-        this.total = total;
-        this.items = items;
-    }
-
-    @Override
-    public String toString() {
-        return "TransDetail{" +
-                "\n\ttotal='" + total + '\'' +
-                ", \n\tresultCode='" + resultCode + '\'' +
-                ", \n\tresultMsg='" + resultMsg + '\'' +
-                ", \n\tapprovedAmt='" + approvedAmt + '\'' +
-                ", \n\taccount='" + account + '\'' +
-                ", \n\tcardType='" + cardType + '\'' +
-                ", \n\thostCode='" + hostCode + '\'' +
-                ", \n\trefNum='" + refNum + '\'' +
-                ", \n\ttimeStamp='" + timeStamp + '\'' +
-                ", \n\titems=" + items +
-                '}';
-    }
-
-    public String toStringForReceipt() {
-        return "total: $" + Double.parseDouble(total) / 100.0 +
-                ", \nresultCode: " + resultCode +
-                ", \nresultMsg: " + resultMsg +
-                ", \napprovedAmt: $" + Double.parseDouble(approvedAmt) / 100.0 +
-                ", \naccount: " + account +
-                ", \ncardType: " + cardType +
-                ", \nhostCode: " + hostCode +
-                ", \nrefNum: " + refNum +
-                ", \ntimeStamp: " + timeStamp;
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            cartListener = (CartListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnItemAddedListener");
+        }
     }
 }
