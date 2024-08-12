@@ -45,7 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:text="Black Ink Pen    $1.25" /> <!-- Example description -->
+            android:text="3 Ring Paper    $1.35" /> <!-- Example description -->
     </LinearLayout>
 
     <LinearLayout
@@ -67,7 +67,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:text="Black Ink Pen    $3.00" /> <!-- Example description -->
+            android:text="Spiral Notebook    $3.00" /> <!-- Example description -->
     </LinearLayout>
 
     <LinearLayout
@@ -89,7 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:text="Black Ink Pen    $1.15" /> <!-- Example description -->
+            android:text="Chocolate Bar    $1.15" /> <!-- Example description -->
     </LinearLayout>
 
 </LinearLayout>
