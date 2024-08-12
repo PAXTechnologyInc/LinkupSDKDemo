@@ -78,6 +78,10 @@ public class HomeActivity extends FragmentActivity implements RecyclerViewAdapte
     private ArrayList<Item> cartItems = new ArrayList<>();
     private List<String> displayedCartItemList;
 
+    public ArrayList<Item> getCartItems(){
+        return cartItems;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -439,6 +443,13 @@ public class HomeActivity extends FragmentActivity implements RecyclerViewAdapte
         System.out.println("[delete ]cart items: " + cartItems);
     }
 
+    @Override
+    public void onDeleteAll() {
+        cartItems.clear();
+        displayedCartItemList.clear();
+        cartAdapter.notifyDataSetChanged();
+        System.out.println("[delete all]cart items: " + cartItems);
+    }
 
     @Override
     public void onItemClick(String content) {

@@ -28,6 +28,7 @@ import com.pax.linkdata.cmd.printer.CommandChannelRequestContent;
 import com.pax.linkdata.deviceinfo.component.Printer;
 import com.pax.linkdata.deviceinfo.component.Scanner;
 
+import com.pax.linkupsdk.demo.HomeActivity;
 import com.pax.linkupsdk.demo.R;
 import com.pax.egarden.devicekit.DeviceHelper;
 import com.pax.linkdata.LinkDevice;
@@ -46,6 +47,7 @@ import com.pax.poslink.poslink.POSLinkCreator;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -68,7 +70,6 @@ public class PosFragment extends Fragment {
             "Payment",
             "Print Receipt",
     };
-    private final List<Item> scannedItems = new ArrayList<>();
 
     public PosFragment(Context context) {
         this.mContext = context;
@@ -102,12 +103,14 @@ public class PosFragment extends Fragment {
             }
         });
 
+
         return fragmentView;
     }
 
     private String getTotalItemsPriceStr() {
         double amount = 0;
-        for (Item item : scannedItems) {
+        List<Item> cartItems = ((HomeActivity) requireActivity()).getCartItems();
+        for (Item item : cartItems) {
             amount += Double.parseDouble(item.price);
         }
         return String.valueOf((int) (amount * 100));
@@ -169,8 +172,10 @@ public class PosFragment extends Fragment {
 
     private String generateItemsStr() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < scannedItems.size(); i++) {
-            Item item = scannedItems.get(i);
+
+        List<Item> cartItems = ((HomeActivity) requireActivity()).getCartItems();
+        for (int i = 0; i < cartItems.size(); i++) {
+            Item item = cartItems.get(i);
             sb.append(item.name);
             sb.append("(");
             sb.append(item.description);
@@ -331,7 +336,9 @@ public class PosFragment extends Fragment {
     private PaymentRequest createPaymentRequest() {
         PaymentRequest request = new PaymentRequest();
         double amount = 0;
-        for (Item item : scannedItems) {
+
+        List<Item> cartItems = ((HomeActivity) requireActivity()).getCartItems();
+        for (Item item : cartItems) {
             amount += Double.parseDouble(item.price);
         }
         request.Amount = String.valueOf((int) (amount * 100));
@@ -355,9 +362,12 @@ public class PosFragment extends Fragment {
         if ("000000".equalsIgnoreCase(paymentResponse.ResultCode)) {
             // todo: print receipt
             System.out.println("print receipt");
-            TransDetail transDetail = new TransDetail(getTotalItemsPriceStr(), paymentResponse.ResultCode, paymentResponse.Message, paymentResponse.ApprovedAmount, paymentResponse.BogusAccountNum, paymentResponse.CardType, paymentResponse.HostCode, paymentResponse.RefNum, paymentResponse.Timestamp, scannedItems);
+            List<Item> cartItems = ((HomeActivity) requireActivity()).getCartItems();
+            TransDetail transDetail = new TransDetail(getTotalItemsPriceStr(), paymentResponse.ResultCode, paymentResponse.Message, paymentResponse.ApprovedAmount, paymentResponse.BogusAccountNum, paymentResponse.CardType, paymentResponse.HostCode, paymentResponse.RefNum, paymentResponse.Timestamp, cartItems);
             print(transDetail);
-            scannedItems.clear();
+
+            cartItems.clear();
+            cartListener.onDeleteAll();
         }
     }
 
@@ -391,7 +401,6 @@ public class PosFragment extends Fragment {
         Item item = SKU_MAP.getOrDefault(message, null);
         if (item != null) {
             addLog("Item scanned: " + item);
-            scannedItems.add(item);
             cartListener.onItemAdded(item);
         } else {
             addLog("No item matched for scanned code: " + message);

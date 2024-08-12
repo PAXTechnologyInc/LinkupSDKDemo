@@ -6,4 +6,6 @@ public interface CartListener {
     void onItemAdded(Item item);
 
     void onItemDeleted(int position);
+
+    void onDeleteAll();
 }
