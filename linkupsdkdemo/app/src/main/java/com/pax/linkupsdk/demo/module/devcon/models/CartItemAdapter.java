@@ -17,12 +17,10 @@ import java.util.List;
 
 public class CartItemAdapter extends ArrayAdapter<String> {
     private final Context context;
-    private List<String> items;
 
     public CartItemAdapter(Context context, List<String> items) {
         super(context, 0, items);
         this.context = context;
-        this.items = items;
     }
 
     @NonNull
@@ -32,11 +30,11 @@ public class CartItemAdapter extends ArrayAdapter<String> {
             convertView = LayoutInflater.from(context).inflate(R.layout.cart_item, parent, false);
         }
 
-        TextView textView = convertView.findViewById(R.id.text_view_item);
+        TextView tvItemName = convertView.findViewById(R.id.tv_item_name);
         Button button = convertView.findViewById(R.id.button_delete);
 
         String item = getItem(position);
-        textView.setText(item);
+        tvItemName.setText(item);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
