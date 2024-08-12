@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.pax.egarden.devicekit.DeviceHelper;
@@ -109,13 +110,14 @@ public class AdFragment extends Fragment {
      */
     private IExchangeDataListener getDataListener() {
         return (ExchangeDataRequestContent requestContent) -> {
-            addLog("received content:" + requestContent.getStringArg1());
+            addLog("received content: " + requestContent.getStringArg1());
             if (!TextUtils.isEmpty(requestContent.getStringArg2())) {
-                addLog(requestContent.getStringArg2());
+                addLog("file received: " + requestContent.getStringArg2());
                 mLastReceivedFile = requestContent.getStringArg2();
             }
             if (!TextUtils.isEmpty(requestContent.getCmd1()) && "play".equals(requestContent.getCmd1())) {
-                mHandler.post(this::openFile);
+                addLog("play " + mLastReceivedFile);
+                mHandler.post(AdFragment.this::openFile);
             }
             ExchangeDataResponseContent responseContent = new ExchangeDataResponseContent();
             responseContent.setStringArg1("success");
@@ -253,6 +255,8 @@ public class AdFragment extends Fragment {
                         requestContent.setTargetOwner(getPackageName(mContext));
                         ExchangeDataResponseContent responseContent = MiscHelper.getInstance(mContext).exchangeData(DemoApplication.getSelectedDeviceList().get(0).getDeviceID(), requestContent);
                         addLog("exchangeData succeeded, response:[" + responseContent.getStringArg1() + "]");
+                        addLog("request: " + requestContent.getCmd1() + " " + requestContent.getStringArg2());
+                        addLog("response: " + responseContent.getStringArg1());
                     } catch (LinkException e) {
                         e.printStackTrace();
                         // Show a message to the message area on the bottom half of the right pane
@@ -282,23 +286,30 @@ public class AdFragment extends Fragment {
             return;
         }
 
-        Uri mediaUri = Uri.parse("file://" + mLastReceivedFile);
-        String ext = FileUtils.getFileExtension(mLastReceivedFile);
+        try {
+            Uri mediaUri = FileProvider.getUriForFile(mContext,
+                                                      mContext.getPackageName() + ".provider",
+                                                      new File(mLastReceivedFile));
+            String ext = FileUtils.getFileExtension(mLastReceivedFile);
 
-        // open and play the image or video file
-        if (ext.equalsIgnoreCase("jpg") || ext.equalsIgnoreCase("mp4")) {
-            addLog("open " + mLastReceivedFile);
-            Intent intent = new Intent();
-            intent.setAction(android.content.Intent.ACTION_VIEW);
-            if (ext.equalsIgnoreCase("jpg"))
-                intent.setDataAndType(mediaUri, "image/jpg");
-            else
-                intent.setDataAndType(mediaUri, "video/mp4");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mContext.startActivity(intent);
-        }
-        else {
-            addLog("Can open only jpg and mp4 files");
+            // open and play the image or video file
+            if (ext.equalsIgnoreCase("jpg") || ext.equalsIgnoreCase("mp4")) {
+                Intent intent = new Intent();
+                intent.setAction(android.content.Intent.ACTION_VIEW);
+                if (ext.equalsIgnoreCase("jpg"))
+                    intent.setDataAndType(mediaUri, "image/jpg");
+                else
+                    intent.setDataAndType(mediaUri, "video/mp4");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                mContext.startActivity(intent);
+            }
+            else {
+                addLog("Can open only jpg and mp4 files");
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            addErrLog("Failed to open media file", new LinkException());
         }
     }
 
