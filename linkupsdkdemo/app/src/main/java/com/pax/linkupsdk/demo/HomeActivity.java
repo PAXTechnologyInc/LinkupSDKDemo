@@ -33,7 +33,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.pax.commonlib.file.FileUtils;
 import com.pax.linkdata.deviceinfo.component.ComponentBase;
+import com.pax.linkupsdk.demo.module.FeaturesFragment;
 import com.pax.linkupsdk.demo.module.MiscFragment;
+import com.pax.linkupsdk.demo.module.devcon.CartListener;
+import com.pax.linkupsdk.demo.module.devcon.models.CartItemAdapter;
+import com.pax.linkupsdk.demo.module.devcon.models.Item;
 import com.pax.util.LogUtil;
 import com.pax.linkupsdk.demo.module.ScannerFragment;
 import com.pax.egarden.devicekit.DeviceHelper;
@@ -50,7 +54,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class HomeActivity extends FragmentActivity implements RecyclerViewAdapter.OnItemClickListener, View.OnClickListener {
+public class HomeActivity extends FragmentActivity implements RecyclerViewAdapter.OnItemClickListener, View.OnClickListener, CartListener {
     private DeviceHelper mDeviceHelper;
     private ListView mDeviceList;
     private Handler mHandler;
@@ -69,6 +73,14 @@ public class HomeActivity extends FragmentActivity implements RecyclerViewAdapte
     private int componentSelectID;
     private int fileTypeSelected;
     private TextView targetfile;
+
+    private CartItemAdapter cartAdapter;
+    private ArrayList<Item> cartItems = new ArrayList<>();
+    private List<String> displayedCartItemList;
+
+    public ArrayList<Item> getCartItems(){
+        return cartItems;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -367,6 +379,10 @@ public class HomeActivity extends FragmentActivity implements RecyclerViewAdapte
                 findViewById(R.id.btn_select_target_file).setVisibility(View.GONE);
                 replaceFragment(new MiscFragment(HomeActivity.this));
                 break;
+            case Constant.DEV_CON:
+                findViewById(R.id.layout_select_device).setVisibility(View.GONE);
+                replaceFragment(new FeaturesFragment(HomeActivity.this));
+                break;
             default:
                 break;
         }
@@ -402,6 +418,37 @@ public class HomeActivity extends FragmentActivity implements RecyclerViewAdapte
 //            }
 //        };
 //        mHandler.postDelayed(runnable, 300); //延时载入才能正常显示已选择的设备和文件
+
+        ListView listView = findViewById(R.id.lv_cart);
+        displayedCartItemList = new ArrayList<>();
+        cartAdapter = new CartItemAdapter(this, displayedCartItemList);
+        listView.setAdapter(cartAdapter);
+    }
+
+    @Override
+    public void onItemAdded(Item item) {
+        cartItems.add(item);
+        displayedCartItemList.add(item.name + "    $" + item.price);
+        System.out.println("[add] cart items: " + cartItems);
+        System.out.println("item added to the list: " + item);
+
+        cartAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onItemDeleted(int position) {
+        cartItems.remove(position);
+        displayedCartItemList.remove(position);
+        cartAdapter.notifyDataSetChanged();
+        System.out.println("[delete ]cart items: " + cartItems);
+    }
+
+    @Override
+    public void onDeleteAll() {
+        cartItems.clear();
+        displayedCartItemList.clear();
+        cartAdapter.notifyDataSetChanged();
+        System.out.println("[delete all]cart items: " + cartItems);
     }
 
     @Override
@@ -615,6 +662,7 @@ public class HomeActivity extends FragmentActivity implements RecyclerViewAdapte
 
     /**
      * 忽略系统字体大小修改
+     *
      * @return
      */
     @Override

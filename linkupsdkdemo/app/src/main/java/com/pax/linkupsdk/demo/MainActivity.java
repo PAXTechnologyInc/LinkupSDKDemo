@@ -25,7 +25,7 @@ import com.pax.linkdata.cmd.LinkException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +40,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void onSuccess() {
                 LogUtil.d("init onSuccess");
+                requestPermission();
+                initDeviceInfo();
+                jumpToHome(Constant.DEV_CON);
             }
 
             @Override
@@ -48,33 +51,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         });
 
-        requestPermission();
-        initButton();
+
+
     }
 
-    @Override
-    public void onClick(View v) {
-        initDeviceInfo();
-        switch (v.getId()) {
-            case R.id.btn_device:
-                jumpToHome(Constant.DEVICE_HELPER);
-                break;
-            case R.id.btn_printer:
-                jumpToHome(Constant.PRINTER_HELPER);
-                break;
-            case R.id.btn_file:
-                jumpToHome(Constant.FILE_HELPER);
-                break;
-            case R.id.btn_scanner:
-                jumpToHome(Constant.SCANNER_HELPER);
-                break;
-            case R.id.btn_misc:
-                jumpToHome(Constant.MISC_HELPER);
-                break;
-            default:
-                break;
-        }
-    }
+
 
     @Override
     protected void onDestroy() {
@@ -150,18 +131,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    private void initButton() {
-        findViewById(R.id.btn_device).setOnClickListener(this);
-        findViewById(R.id.btn_printer).setOnClickListener(this);
-        findViewById(R.id.btn_file).setOnClickListener(this);
-        findViewById(R.id.btn_scanner).setOnClickListener(this);
-        findViewById(R.id.btn_misc).setOnClickListener(this);
-    }
-
     private void jumpToHome(String title) {
         Intent intent = new Intent(this, HomeActivity.class);
         intent.putExtra("title", title);
         startActivity(intent);
+        finish();
 //        LogUtil.d("jumpToHome, title: " + title);
     }
 

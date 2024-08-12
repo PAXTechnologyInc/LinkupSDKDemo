@@ -35,7 +35,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="7"
+                android:layout_weight="3"
                 android:orientation="vertical">
 
                 <TextView
@@ -57,9 +57,36 @@
                 <ListView
                     android:id="@+id/lv_devices"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dp_5" />
+                    android:layout_height="178dp"
+                    android:layout_marginTop="@dimen/dp_5"/>
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_50"
+                    android:background="@color/color_39C2B7"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/dp_5"
+                    android:text="Item Cart"
+                    android:textColor="#ffffff"
+                    android:textSize="@dimen/sp_20"
+                    android:textStyle="bold" />
+
+
+                <ListView
+                    android:id="@+id/lv_cart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="178dp"
+                    android:layout_marginTop="@dimen/dp_5"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+
 
             <LinearLayout
                 android:id="@+id/layout_select_file"
