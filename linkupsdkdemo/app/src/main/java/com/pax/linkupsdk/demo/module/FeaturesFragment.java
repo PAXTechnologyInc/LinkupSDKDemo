@@ -13,11 +13,12 @@ import androidx.fragment.app.FragmentTransaction;
 import com.pax.linkupsdk.demo.R;
 import com.pax.linkupsdk.demo.module.devcon.AdFragment;
 import com.pax.linkupsdk.demo.module.devcon.BonusFragment;
+import com.pax.linkupsdk.demo.module.devcon.InventoryFragment;
 import com.pax.linkupsdk.demo.module.devcon.PosFragment;
 
 public class FeaturesFragment extends Fragment {
 
-    private Button buttonPOS, buttonAD, buttonBonus;
+    private Button buttonInventory, buttonPOS, buttonAD, buttonBonus;
 
     private final Context mContext;
 
@@ -30,6 +31,7 @@ public class FeaturesFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_features, container, false);
 
+        buttonInventory = view.findViewById(R.id.buttonInventory);
         buttonPOS = view.findViewById(R.id.buttonPOS);
         buttonAD = view.findViewById(R.id.buttonAD);
         buttonBonus = view.findViewById(R.id.buttonBonus);
@@ -83,10 +85,19 @@ public class FeaturesFragment extends Fragment {
         if (savedInstanceState == null) {
             buttonPOS.setBackgroundTintList(currentButtonColorState);
             showFragment(new PosFragment(getContext()));
+//             resetAllBtnColor(btns);
+//             buttonPOS.setBackgroundColor(Color.RED);
         }
 
         return view;
     }
+
+    private void resetAllBtnColor(Button[] btns) {
+        for (int i = 0; i < btns.length; i++) {
+            btns[i].setBackgroundColor(Color.GRAY);
+        }
+    }
+
 
     private void showFragment(Fragment fragment) {
         FragmentManager fragmentManager = getChildFragmentManager();
