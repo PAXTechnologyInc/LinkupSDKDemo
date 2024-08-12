@@ -96,7 +96,7 @@ public class PosFragment extends Fragment {
                     pay();
                     break;
                 case 3:
-                    print(null);
+                    print(TransDetail.DEMO_TRANS_DETAIL, true);
                     break;
                 default:
                     break;
@@ -117,7 +117,7 @@ public class PosFragment extends Fragment {
     }
 
 
-    private void print(TransDetail transDetail) {
+    private void print(TransDetail transDetail, boolean isDemo) {
         try {
             CommandChannelRequestContent requestContent = new CommandChannelRequestContent();
             LinkDevice thisDevice = mDeviceHelper.getSelfDeviceInfo();
@@ -127,12 +127,11 @@ public class PosFragment extends Fragment {
                 return;
             }
 
-            String content = generateItemsStr();
+            String content = generateItemsStr(isDemo);
 
-            if (transDetail != null) {
-                content += "\n\n";
-                content += generateTransDetailStr(transDetail);
-            }
+            content += "\n\n";
+            content += generateTransDetailStr(transDetail);
+            content += "\n\n\n\n\n\n\n\n\n\n";
 
             String sn = printer.getSn();
             thisDevice.setCurrentComponentID(sn);
@@ -170,7 +169,11 @@ public class PosFragment extends Fragment {
     };
 
 
-    private String generateItemsStr() {
+    private String generateItemsStr(boolean isDemo) {
+        if(isDemo){
+            return "Item_1 (Demo item 1)) $5.12\nItem_2 (Demo item 2)) $2.56\nItem_3 (Demo item 3)) $2.56\n";
+        }
+
         StringBuilder sb = new StringBuilder();
 
         List<Item> cartItems = ((HomeActivity) requireActivity()).getCartItems();
@@ -294,6 +297,11 @@ public class PosFragment extends Fragment {
             ProcessTransResult processTransResult = poslink.ProcessTrans();
 
             PaymentResponse paymentResponse = poslink.PaymentResponse;
+            // failed
+            if(paymentResponse == null){
+                hideProgressOverlay();
+                return;
+            }
 
             Gson gson = new Gson();
             addLog("processTransResult:" + gson.toJson(processTransResult));
@@ -364,7 +372,7 @@ public class PosFragment extends Fragment {
             System.out.println("print receipt");
             List<Item> cartItems = ((HomeActivity) requireActivity()).getCartItems();
             TransDetail transDetail = new TransDetail(getTotalItemsPriceStr(), paymentResponse.ResultCode, paymentResponse.Message, paymentResponse.ApprovedAmount, paymentResponse.BogusAccountNum, paymentResponse.CardType, paymentResponse.HostCode, paymentResponse.RefNum, paymentResponse.Timestamp, cartItems);
-            print(transDetail);
+            print(transDetail, false);
 
             cartItems.clear();
             cartListener.onDeleteAll();
@@ -405,6 +413,7 @@ public class PosFragment extends Fragment {
         } else {
             addLog("No item matched for scanned code: " + message);
         }
+
     }
 
     @Override

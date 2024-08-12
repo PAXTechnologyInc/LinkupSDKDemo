@@ -1,5 +1,7 @@
 package com.pax.linkupsdk.demo.module.devcon.models;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TransDetail {
@@ -60,4 +62,6 @@ public class TransDetail {
                 ", \nrefNum: " + refNum +
                 ", \ntimeStamp: " + timeStamp;
     }
+
+    static public TransDetail DEMO_TRANS_DETAIL = new TransDetail("1024", "000000", "Demo OK", "1024", "1234", "VISA", "001", "9999", new Date().toString(), new ArrayList<>());
 }
