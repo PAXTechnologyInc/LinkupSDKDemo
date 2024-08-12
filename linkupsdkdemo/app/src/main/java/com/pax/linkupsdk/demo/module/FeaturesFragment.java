@@ -1,12 +1,11 @@
 package com.pax.linkupsdk.demo.module;
-
-import android.graphics.Color;
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-//import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -21,6 +20,12 @@ public class FeaturesFragment extends Fragment {
 
     private Button buttonInventory, buttonPOS, buttonAD, buttonBonus;
 
+    private final Context mContext;
+
+    public FeaturesFragment(Context context) {
+        this.mContext = context;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -33,41 +38,71 @@ public class FeaturesFragment extends Fragment {
 
         Button[] btns = {buttonInventory, buttonPOS, buttonAD, buttonBonus};
 
-        buttonInventory.setOnClickListener(v -> {
-            showFragment(new InventoryFragment());
-            resetAllBtnColor(btns);
-            buttonInventory.setBackgroundColor(Color.RED);
+        // Different colors for the function tabs
+        ColorStateList currentButtonColorState = ColorStateList.valueOf(getResources().getColor(R.color.defaultColor));
+        ColorStateList otherButtonColorState = ColorStateList.valueOf(getResources().getColor(R.color.inactive_color));
 
+        buttonInventory.setOnClickListener(v -> {
+            resetAllBtnColor(btns, otherButtonColorState);
+            v.setBackgroundTintList(currentButtonColorState);
+
+            showFragment(new InventoryFragment());
         });
         buttonPOS.setOnClickListener(v -> {
+            // Hide the "Select file" and "Select Target file" buttons on the left pane
+            requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.GONE);
+            // Show the section of "Selected devices" on the top of the right pane
+            requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.GONE);
+            // Hide the section of "Selected files" on the top of the right pane
+            requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.GONE);
+            // Set the default color for the
+            resetAllBtnColor(btns, otherButtonColorState);
+            v.setBackgroundTintList(currentButtonColorState);
+
             showFragment(new PosFragment(getContext()));
-            resetAllBtnColor(btns);
-            buttonPOS.setBackgroundColor(Color.RED);
         });
         buttonAD.setOnClickListener(v -> {
-            showFragment(new AdFragment());
-            resetAllBtnColor(btns);
-            buttonAD.setBackgroundColor(Color.RED);
+            // Hide the "Select file" and "Select Target file" buttons on the left pane
+            requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.VISIBLE);
+            // Hide the "Select target file button but let only the "Select file" button show on the left pane
+            requireActivity().findViewById(R.id.btn_select_target_file).setVisibility(View.GONE);
+            // Show the section of "Selected devices" on the top of the right pane
+            requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
+            // Hide the section of "Selected files" on the top of the right pane
+            requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.VISIBLE);
+
+            // set button color
+            resetAllBtnColor(btns, otherButtonColorState);
+            v.setBackgroundTintList(currentButtonColorState);
+
+            showFragment(new AdFragment(mContext));
         });
         buttonBonus.setOnClickListener(v -> {
-            showFragment(new BonusFragment());
-            resetAllBtnColor(btns);
-            buttonBonus.setBackgroundColor(Color.RED);
+            // Hide the "Select file" and "Select Target file" buttons on the left pane
+            requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.GONE);
+            // Show the section of "Selected devices" on the top of the right pane
+            requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
+            // Hide the section of "Selected files" on the top of the right pane
+            requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.GONE);
+            resetAllBtnColor(btns, otherButtonColorState);
+            v.setBackgroundTintList(currentButtonColorState);
+
+            showFragment(new BonusFragment(mContext));
         });
 
-        // 默认显示第一个Fragment
+        // Set default to PosFragment
         if (savedInstanceState == null) {
+            resetAllBtnColor(btns, otherButtonColorState);
+            buttonPOS.setBackgroundTintList(currentButtonColorState);
             showFragment(new PosFragment(getContext()));
-            resetAllBtnColor(btns);
-            buttonPOS.setBackgroundColor(Color.RED);
         }
 
         return view;
     }
 
-    private void resetAllBtnColor(Button[] btns) {
-        for (int i = 0; i < btns.length; i++) {
-            btns[i].setBackgroundColor(Color.GRAY);
+    private void resetAllBtnColor(Button[] btns, ColorStateList buttonColorState) {
+        for (Button btn : btns) {
+            btn.setBackgroundTintList(buttonColorState);
         }
     }
 

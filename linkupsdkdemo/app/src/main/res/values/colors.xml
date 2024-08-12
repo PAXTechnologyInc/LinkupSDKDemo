@@ -9,5 +9,5 @@
     <color name="color_5194ff">#5194ff</color>
     <color name="color_48DA8B">#48DA8B</color>
     <color name="color_39C2B7">#A9E4DF</color>
-
+    <color name="inactive_color">#FFE3E3E3</color>
 </resources>

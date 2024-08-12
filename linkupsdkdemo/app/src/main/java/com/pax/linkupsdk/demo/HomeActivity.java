@@ -381,7 +381,7 @@ public class HomeActivity extends FragmentActivity implements RecyclerViewAdapte
                 break;
             case Constant.DEV_CON:
                 findViewById(R.id.layout_select_device).setVisibility(View.GONE);
-                replaceFragment(new FeaturesFragment());
+                replaceFragment(new FeaturesFragment(HomeActivity.this));
                 break;
             default:
                 break;
