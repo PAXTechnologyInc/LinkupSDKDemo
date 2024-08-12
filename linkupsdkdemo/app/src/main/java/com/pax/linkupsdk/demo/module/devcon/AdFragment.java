@@ -13,6 +13,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +48,7 @@ import java.util.concurrent.CountDownLatch;
 public class AdFragment extends Fragment {
     private final Context mContext;
     private String mLastReceivedFile;
+    private Handler mHandler;
 
     // list of the names of available functionalities
     private static final String[] mListInfo = new String[]{
@@ -63,6 +66,7 @@ public class AdFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -109,6 +113,9 @@ public class AdFragment extends Fragment {
             if (!TextUtils.isEmpty(requestContent.getStringArg2())) {
                 addLog(requestContent.getStringArg2());
                 mLastReceivedFile = requestContent.getStringArg2();
+            }
+            if (!TextUtils.isEmpty(requestContent.getCmd1()) && "play".equals(requestContent.getCmd1())) {
+                mHandler.post(this::openFile);
             }
             ExchangeDataResponseContent responseContent = new ExchangeDataResponseContent();
             responseContent.setStringArg1("success");
@@ -240,8 +247,9 @@ public class AdFragment extends Fragment {
                      * action to see the result */
                     try {
                         ExchangeDataRequestContent requestContent = new ExchangeDataRequestContent();
-                        requestContent.setStringArg1("Press \"openFile\" button to open:");
+                        requestContent.setStringArg1("Press \"openFile\" button to open: ");
                         requestContent.setStringArg2(remoteFile);
+                        requestContent.setCmd1("play");
                         requestContent.setTargetOwner(getPackageName(mContext));
                         ExchangeDataResponseContent responseContent = MiscHelper.getInstance(mContext).exchangeData(DemoApplication.getSelectedDeviceList().get(0).getDeviceID(), requestContent);
                         addLog("exchangeData succeeded, response:[" + responseContent.getStringArg1() + "]");
@@ -270,7 +278,7 @@ public class AdFragment extends Fragment {
      */
     private void openFile() {
         if (TextUtils.isEmpty(mLastReceivedFile)) {
-            addLog("No file sent");
+            addLog("No file received");
             return;
         }
 
