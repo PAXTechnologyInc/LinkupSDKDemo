@@ -35,6 +35,7 @@ import com.pax.linkdata.LinkDevice;
 import com.pax.linkdata.cmd.LinkException;
 import com.pax.linkupsdk.demo.module.devcon.models.Item;
 import com.pax.linkupsdk.demo.module.devcon.models.TransDetail;
+import com.pax.linkupsdk.demo.module.devcon.utils.Indicator;
 import com.pax.poslink.CommSetting;
 import com.pax.poslink.PaymentRequest;
 import com.pax.poslink.PaymentResponse;
@@ -45,9 +46,7 @@ import com.pax.poslink.constant.TransType;
 import com.pax.poslink.poslink.POSLinkCreator;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -59,7 +58,6 @@ import static com.pax.linkupsdk.demo.module.devcon.Consts.SKU_MAP;
 
 public class PosFragment extends Fragment {
     private final Context mContext;
-    private FrameLayout progressOverlay;
     private DeviceHelper mDeviceHelper;
     private PrinterHelper mPrinterHelper;
     CartListener cartListener;
@@ -81,7 +79,6 @@ public class PosFragment extends Fragment {
         mDeviceHelper = DeviceHelper.getInstance(mContext);
         mPrinterHelper = PrinterHelper.getInstance(mContext);
         View fragmentView = inflater.inflate(R.layout.fragment_right, null);
-        progressOverlay = fragmentView.findViewById(R.id.progressOverlay);
         GridView gridView = fragmentView.findViewById(R.id.gv_function);
         gridView.setAdapter(new ArrayAdapter<String>(requireActivity(), R.layout.gridview_layoutres_btn, mListInfo));
         gridView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
@@ -273,16 +270,8 @@ public class PosFragment extends Fragment {
         }
     }
 
-    private void showProgressOverlay() {
-        getActivity().runOnUiThread(() -> progressOverlay.setVisibility(View.VISIBLE));
-    }
-
-    private void hideProgressOverlay() {
-        getActivity().runOnUiThread(() -> progressOverlay.setVisibility(View.GONE));
-    }
-
     private void pay() {
-        showProgressOverlay();
+        Indicator.showSpin(requireActivity(), "Processing, please wait.");
         new Thread(this::processPayment).start();
     }
 
@@ -299,7 +288,7 @@ public class PosFragment extends Fragment {
             PaymentResponse paymentResponse = poslink.PaymentResponse;
             // failed
             if(paymentResponse == null){
-                hideProgressOverlay();
+                Indicator.hideSpin();
                 return;
             }
 
@@ -309,8 +298,7 @@ public class PosFragment extends Fragment {
             Logger logger = Logger.getLogger(PosFragment.class.getName());
             logger.log(Level.INFO, "paymentResponse:" + gson.toJson(paymentResponse));
             handleTransactionResult(paymentResponse);
-            hideProgressOverlay();
-
+            Indicator.hideSpin();
 
         } catch (Exception e) {
             addLog("Error processing transaction: " + e.getMessage());
