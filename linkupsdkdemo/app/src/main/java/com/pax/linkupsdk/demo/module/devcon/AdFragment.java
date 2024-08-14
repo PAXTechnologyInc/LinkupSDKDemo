@@ -30,7 +30,6 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import com.pax.egarden.devicekit.DeviceHelper;
 import com.pax.egarden.devicekit.FileHelper;
 import com.pax.egarden.devicekit.MiscHelper;
 import com.pax.linkdata.IExchangeDataListener;
@@ -208,30 +207,27 @@ public class AdFragment extends Fragment {
             return;
         }
 
+        // Get the selected target device
+        final LinkDevice selectedDevice = DemoApplication.getSelectedDeviceList().get(0);
+
+        // Get the path of the selected file
+        String selectedFile = DemoApplication.getSelectedFileList().get(0);
+
+        // define the remote file path
+        String remoteFile;
+        if (DemoApplication.getSelectedDeviceList().get(0).getFirmwareVersion().startsWith("Android")) {
+            remoteFile = Environment.getExternalStorageDirectory().toString() + File.separatorChar + "LinkUpSDKDemo" + File.separatorChar + (new File(selectedFile)).getName();
+        } else {
+            remoteFile = (new File(selectedFile)).getName();
+        }
+
+        // Show a message to the message area on the bottom half of the right pane
+        addLog(String.format("Send selected file to %1$s/%2$s", selectedDevice.getDeviceName(), remoteFile));
+
         try {
-            // Get the selected target device
-            final LinkDevice selectedDevice = DemoApplication.getSelectedDeviceList().get(0);
-            // Get the linked device that the file is located
-            final LinkDevice selfDevice = DeviceHelper.getInstance(mContext).getSelfDeviceInfo();
-
-            // Get the path of the selected file
-            String localfile = DemoApplication.getSelectedFileList().get(0);
-
-            // define the remote file path
-            String remoteFile;
-            if (DemoApplication.getSelectedDeviceList().get(0).getFirmwareVersion().startsWith("Android")) {
-                remoteFile = Environment.getExternalStorageDirectory().toString() + File.separatorChar + "LinkUpSDKDemo" + File.separatorChar + (new File(localfile)).getName();
-            } else {
-                remoteFile = (new File(localfile)).getName();
-            }
-
-            // Show a message to the message area on the bottom half of the right pane
-            addLog(String.format("Send selected file from %1$s to %2$s/%3$s", selfDevice.getDeviceName(),
-                                 selectedDevice.getDeviceName(), remoteFile));
-
             CountDownLatch mCountDownLatch = new CountDownLatch(1);
             // Call an SDK API to send file from the starting device to the selected target device
-            FileHelper.getInstance(mContext).transferFile(selectedDevice.getDeviceID(), localfile, remoteFile, true, (totalLen, offset, status) -> {
+            FileHelper.getInstance(mContext).transferFile(selectedDevice.getDeviceID(), selectedFile, remoteFile, true, (totalLen, offset, status) -> {
                 // The callback actions after the file transfer fails, is still in progress, or is completed
                 if (status < 0) {
                     // Show the failure message to the message area at the bottom half of the right pane
@@ -247,21 +243,7 @@ public class AdFragment extends Fragment {
 
                     /* Send a message to the destination device to inform of the file transfer is completed and the
                      * action to see the result */
-                    try {
-                        ExchangeDataRequestContent requestContent = new ExchangeDataRequestContent();
-                        requestContent.setStringArg1("Press \"openFile\" button to open: ");
-                        requestContent.setStringArg2(remoteFile);
-                        requestContent.setCmd1("play");
-                        requestContent.setTargetOwner(getPackageName(mContext));
-                        ExchangeDataResponseContent responseContent = MiscHelper.getInstance(mContext).exchangeData(DemoApplication.getSelectedDeviceList().get(0).getDeviceID(), requestContent);
-                        addLog("exchangeData succeeded, response:[" + responseContent.getStringArg1() + "]");
-                        addLog("request: " + requestContent.getCmd1() + " " + requestContent.getStringArg2());
-                        addLog("response: " + responseContent.getStringArg1());
-                    } catch (LinkException e) {
-                        e.printStackTrace();
-                        // Show a message to the message area on the bottom half of the right pane
-                        addErrLog("exchangeData failed", e);
-                    }
+                    notifyTransferCompleted(mContext, selectedDevice, remoteFile);
                 }
             });
             mCountDownLatch.await();
@@ -275,6 +257,29 @@ public class AdFragment extends Fragment {
             addLog("File transfer failed");
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * Use exchangeData API to send notification to the target device that the transfer is completed.
+     */
+    private void notifyTransferCompleted(final Context context,
+                                         final LinkDevice selectedDevice,
+                                         final String remoteFile) {
+        try {
+            ExchangeDataRequestContent requestContent = new ExchangeDataRequestContent();
+            requestContent.setStringArg1("Press \"openFile\" button to open: ");
+            requestContent.setStringArg2(remoteFile);
+            requestContent.setCmd1("play");
+            requestContent.setTargetOwner(getPackageName(context));
+            ExchangeDataResponseContent responseContent =
+                    MiscHelper.getInstance(context).exchangeData(selectedDevice.getDeviceID(), requestContent);
+            addLog("exchangeData succeeded, response:[" + responseContent.getStringArg1() + "]");
+        } catch (LinkException e) {
+            e.printStackTrace();
+            // Show a message to the message area on the bottom half of the right pane
+            addErrLog("exchangeData failed", e);
+        }
+
     }
 
     /**
