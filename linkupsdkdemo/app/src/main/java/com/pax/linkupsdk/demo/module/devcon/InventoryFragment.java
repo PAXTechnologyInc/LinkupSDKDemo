@@ -1,8 +1,10 @@
 package com.pax.linkupsdk.demo.module.devcon;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -10,53 +12,71 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.pax.linkupsdk.demo.R;
+import com.pax.linkupsdk.demo.module.devcon.models.Item;
 
 
 public class InventoryFragment extends Fragment {
     CartListener mListener;
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_inventory, container, false);
+    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_inventory, container, false);
-
-        View pen = view.findViewById(R.id.ll_pen);
-        pen.setOnClickListener(v -> {
-            System.out.println("Pen clicked");
-            mListener.onItemAdded(Consts.PEN);
-        });
-        View paper = view.findViewById(R.id.ll_paper);
-        paper.setOnClickListener(v -> {
-            System.out.println("paper clicked");
-            mListener.onItemAdded(Consts.PAPER);
-        });
-        View notebook = view.findViewById(R.id.ll_notebook);
-        notebook.setOnClickListener(v -> {
-            System.out.println("notebook clicked");
-            mListener.onItemAdded(Consts.NOTEBOOK);
-        });
-        View chocolate = view.findViewById(R.id.ll_chocolate);
-        chocolate.setOnClickListener(v -> {
-            System.out.println("chocolate clicked");
-            mListener.onItemAdded(Consts.CHOCOLATE);
-        });
-
-
-        View rootView = inflater.inflate(R.layout.activity_home, container, false);
-        ListView listView = rootView.findViewById(R.id.lv_cart);
-        String[] items = {"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"};
-
-        // 创建ArrayAdapter
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, items);
-
-        // 设置适配器到ListView
-        listView.setAdapter(adapter);
-
-        return view;
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        addItemsDynamically(view);
     }
+
+    @SuppressLint("SetTextI18n")
+    private void addItemsDynamically(View view) {
+        LinearLayout container = view.findViewById(R.id.item_container);
+
+        // items in a Const file
+        Item[] items = {Consts.PEN, Consts.PAPER, Consts.NOTEBOOK, Consts.CHOCOLATE};
+
+        // add view
+        for (int i = 0; i < items.length; i++) {
+            LinearLayout itemLayout = new LinearLayout(getContext());
+            itemLayout.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            layoutParams.setMargins(10, 10, 10, 10);
+            itemLayout.setLayoutParams(layoutParams);
+
+            ImageView imageView = new ImageView(getContext());
+            LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(200, 200);
+            imageView.setLayoutParams(imageParams);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            imageView.setImageResource(items[i].imgId);
+            imageView.setContentDescription("DEMO");
+
+            TextView textView = new TextView(getContext());
+            textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            textView.setPadding(8, 8, 8, 8);
+            textView.setText(items[i].description + "    $" + items[i].price);
+
+            itemLayout.addView(imageView);
+            itemLayout.addView(textView);
+            container.addView(itemLayout);
+
+            int finalI = i;
+            itemLayout.setOnClickListener(v -> {
+                String itemConst = (String) v.getTag();
+                System.out.println(itemConst + " clicked");
+                mListener.onItemAdded(items[finalI]);
+            });
+        }
+    }
+
 
     @Override
     public void onAttach(@NonNull Context context) {

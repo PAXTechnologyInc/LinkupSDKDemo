@@ -79,7 +79,7 @@ public class FeaturesFragment extends Fragment {
                 resetAllBtnColor(btns, otherButtonColorState);
                 v.setBackgroundTintList(currentButtonColorState);
 
-                showFragment(new PosFragment(getContext()));
+                showFragment(new PosFragment());
             });
             buttonAD.setOnClickListener(v -> {
                 // Hide the "Select file" and "Select Target file" buttons on the left pane
@@ -114,7 +114,7 @@ public class FeaturesFragment extends Fragment {
             if (savedInstanceState == null) {
                 resetAllBtnColor(btns, otherButtonColorState);
                 buttonPOS.setBackgroundTintList(currentButtonColorState);
-                showFragment(new PosFragment(getContext()));
+                showFragment(new PosFragment());
             }
 
             return view;
