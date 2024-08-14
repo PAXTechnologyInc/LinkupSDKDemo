@@ -35,7 +35,7 @@ import com.pax.linkdata.LinkDevice;
 import com.pax.linkdata.cmd.LinkException;
 import com.pax.linkupsdk.demo.module.devcon.models.Item;
 import com.pax.linkupsdk.demo.module.devcon.models.TransDetail;
-import com.pax.linkupsdk.demo.module.devcon.utils.Indicator;
+import com.pax.linkupsdk.demo.module.devcon.utils.IndicatorUtil;
 import com.pax.poslink.CommSetting;
 import com.pax.poslink.PaymentRequest;
 import com.pax.poslink.PaymentResponse;
@@ -271,7 +271,7 @@ public class PosFragment extends Fragment {
     }
 
     private void pay() {
-        Indicator.showSpin(requireActivity(), "Processing, please wait.");
+        IndicatorUtil.showSpin(requireActivity(), "Processing, please wait.");
         new Thread(this::processPayment).start();
     }
 
@@ -288,7 +288,7 @@ public class PosFragment extends Fragment {
             PaymentResponse paymentResponse = poslink.PaymentResponse;
             // failed
             if(paymentResponse == null){
-                Indicator.hideSpin();
+                IndicatorUtil.hideSpin();
                 return;
             }
 
@@ -298,7 +298,7 @@ public class PosFragment extends Fragment {
             Logger logger = Logger.getLogger(PosFragment.class.getName());
             logger.log(Level.INFO, "paymentResponse:" + gson.toJson(paymentResponse));
             handleTransactionResult(paymentResponse);
-            Indicator.hideSpin();
+            IndicatorUtil.hideSpin();
 
         } catch (Exception e) {
             addLog("Error processing transaction: " + e.getMessage());

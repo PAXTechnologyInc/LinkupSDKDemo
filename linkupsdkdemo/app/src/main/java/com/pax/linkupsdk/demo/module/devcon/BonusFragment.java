@@ -93,15 +93,6 @@ public class BonusFragment extends Fragment {
 
     private void uploadMenu() {
         try {
-            // if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
-            //         != PackageManager.PERMISSION_GRANTED) {
-
-            //     ActivityCompat.requestPermissions(requireActivity(),
-            //             new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-            //             2);
-            // }
-
-
             if(DemoApplication.getSelectedFileList().isEmpty()){
                 addLog("Please select the menu json file first.");
                 return;
