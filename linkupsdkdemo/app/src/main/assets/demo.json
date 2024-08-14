@@ -1,0 +1,424 @@
+{
+  "menus": [
+    {
+      "external_id": "main_menu",
+      "name": {
+        "translations": {
+          "en_us": "Main Menu",
+          "es_es": "Menú Principal"
+        }
+      },
+      "availability": [
+        {
+          "day_of_week": "MON",
+          "time_periods": [
+            {
+              "start_time": "11:00",
+              "end_time": "22:00"
+            }
+          ]
+        },
+        {
+          "day_of_week": "TUE",
+          "time_periods": [
+            {
+              "start_time": "11:00",
+              "end_time": "22:00"
+            }
+          ]
+        },
+        {
+          "day_of_week": "WED",
+          "time_periods": [
+            {
+              "start_time": "11:00",
+              "end_time": "22:00"
+            }
+          ]
+        },
+        {
+          "day_of_week": "THU",
+          "time_periods": [
+            {
+              "start_time": "11:00",
+              "end_time": "22:00"
+            }
+          ]
+        },
+        {
+          "day_of_week": "FRI",
+          "time_periods": [
+            {
+              "start_time": "11:00",
+              "end_time": "23:00"
+            }
+          ]
+        },
+        {
+          "day_of_week": "SAT",
+          "time_periods": [
+            {
+              "start_time": "11:00",
+              "end_time": "23:00"
+            }
+          ]
+        },
+        {
+          "day_of_week": "SUN",
+          "time_periods": [
+            {
+              "start_time": "12:00",
+              "end_time": "21:00"
+            }
+          ]
+        }
+      ],
+      "category_external_ids": [
+        "appetizers",
+        "main_courses",
+        "desserts",
+        "drinks"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "external_id": "appetizers",
+      "name": {
+        "translations": {
+          "en_us": "Appetizers",
+          "es_es": "Aperitivos"
+        }
+      },
+      "description": {
+        "translations": {
+          "en_us": "Start your meal with these delicious appetizers",
+          "es_es": "Comience su comida con estos deliciosos aperitivos"
+        }
+      },
+      "item_external_ids": [
+        "nachos"
+      ]
+    },
+    {
+      "external_id": "main_courses",
+      "name": {
+        "translations": {
+          "en_us": "Main Courses",
+          "es_es": "Platos Principales"
+        }
+      },
+      "description": {
+        "translations": {
+          "en_us": "Satisfy your hunger with our main courses",
+          "es_es": "Satisfaga su hambre con nuestros platos principales"
+        }
+      },
+      "item_external_ids": [
+        "burger"
+      ]
+    },
+    {
+      "external_id": "desserts",
+      "name": {
+        "translations": {
+          "en_us": "Desserts",
+          "es_es": "Postres"
+        }
+      },
+      "description": {
+        "translations": {
+          "en_us": "Finish your meal with something sweet",
+          "es_es": "Termine su comida con algo dulce"
+        }
+      }
+    },
+    {
+      "external_id": "drinks",
+      "name": {
+        "translations": {
+          "en_us": "Drinks",
+          "es_es": "Bebidas"
+        }
+      },
+      "description": {
+        "translations": {
+          "en_us": "Quench your thirst with our selection of drinks",
+          "es_es": "Sacie su sed con nuestra selección de bebidas"
+        }
+      },
+      "item_external_ids": [
+        "soda",
+        "beer"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "external_id": "nachos",
+      "name": {
+        "translations": {
+          "en_us": "Nachos",
+          "es_es": "Nachos"
+        }
+      },
+      "in_stock": "false",
+      "description": {
+        "translations": {
+          "en_us": "Crispy tortilla chips with melted cheese and toppings",
+          "es_es": "Crujientes chips de tortilla con queso fundido y coberturas"
+        }
+      },
+      "price": 899,
+      "tax": 72,
+      "ingredients": "Tortilla chips, cheese, jalapeños, sour cream, guacamole",
+      "allergens": "Milk, Wheat",
+      "dietary_labels": [
+        "VEGETARIAN"
+      ],
+      "prep_time": 10,
+      "sell_separately": true,
+      "modifier_external_ids": [
+        "nacho_toppings"
+      ]
+    },
+    {
+      "external_id": "burger",
+      "name": {
+        "translations": {
+          "en_us": "Classic Burger",
+          "es_es": "Hamburguesa Clásica"
+        }
+      },
+      "description": {
+        "translations": {
+          "en_us": "Juicy beef patty with lettuce, tomato, and cheese",
+          "es_es": "Jugosa hamburguesa de res con lechuga, tomate y queso"
+        }
+      },
+      "price": 1299,
+      "tax": 104,
+      "ingredients": "Beef patty, bun, lettuce, tomato, cheese, pickles",
+      "allergens": "Milk, Wheat, Soy",
+      "prep_time": 15,
+      "sell_separately": true,
+      "modifier_external_ids": [
+        "burger_toppings"
+      ]
+    },
+    {
+      "external_id": "soda",
+      "name": {
+        "translations": {
+          "en_us": "Soda",
+          "es_es": "Refresco"
+        }
+      },
+      "description": {
+        "translations": {
+          "en_us": "Refreshing carbonated drink",
+          "es_es": "Refrescante bebida carbonatada"
+        }
+      },
+      "price": 299,
+      "tax": 24,
+      "sell_separately": true,
+      "modifier_external_ids": [
+        "soda_size"
+      ]
+    },
+    {
+      "external_id": "beer",
+      "name": {
+        "translations": {
+          "en_us": "Beer",
+          "es_es": "Cerveza"
+        }
+      },
+      "description": {
+        "translations": {
+          "en_us": "Cold, refreshing beer",
+          "es_es": "Cerveza fría y refrescante"
+        }
+      },
+      "price": 599,
+      "tax": 48,
+      "allergens": "Barley",
+      "alcohol_by_volume": 5.0,
+      "sell_separately": true,
+      "modifier_external_ids": [
+        "beer_type"
+      ]
+    }
+  ],
+  "modifier_groups": [
+    {
+      "external_id": "nacho_toppings",
+      "type": "MULTIPLE",
+      "name": {
+        "translations": {
+          "en_us": "Nacho Toppings",
+          "es_es": "Coberturas de Nachos"
+        }
+      },
+      "group_max": 5,
+      "group_min": 0,
+      "charge_after": 2,
+      "modifier_item_external_ids": [
+        "extra_cheese",
+        "extra_guacamole"
+      ]
+    },
+    {
+      "external_id": "burger_toppings",
+      "type": "MULTIPLE",
+      "name": {
+        "translations": {
+          "en_us": "Burger Toppings",
+          "es_es": "Coberturas de Hamburguesa"
+        }
+      },
+      "group_max": 4,
+      "group_min": 0,
+      "charge_after": 1,
+      "modifier_item_external_ids": [
+        "extra_cheese",
+        "bacon"
+      ]
+    },
+    {
+      "external_id": "soda_size",
+      "type": "SINGLE",
+      "name": {
+        "translations": {
+          "en_us": "Soda Size",
+          "es_es": "Tamaño de Refresco"
+        }
+      },
+      "group_max": 1,
+      "group_min": 1,
+      "charge_after": 0,
+      "modifier_item_external_ids": [
+        "small_soda",
+        "large_soda"
+      ]
+    },
+    {
+      "external_id": "beer_type",
+      "type": "SINGLE",
+      "name": {
+        "translations": {
+          "en_us": "Beer Type",
+          "es_es": "Tipo de Cerveza"
+        }
+      },
+      "group_max": 1,
+      "group_min": 1,
+      "charge_after": 0,
+      "modifier_item_external_ids": [
+        "lager",
+        "ale"
+      ]
+    }
+  ],
+  "modifier_items": [
+    {
+      "external_id": "extra_cheese",
+      "name": {
+        "translations": {
+          "en_us": "Extra Cheese",
+          "es_es": "Queso Extra"
+        }
+      },
+      "price_change": 100,
+      "tax_change": 8,
+      "min_quantity": 0,
+      "max_quantity": 1,
+      "default_quantity": 0
+    },
+    {
+      "external_id": "extra_guacamole",
+      "name": {
+        "translations": {
+          "en_us": "Extra Guacamole",
+          "es_es": "Guacamole Extra"
+        }
+      },
+      "price_change": 150,
+      "tax_change": 12,
+      "min_quantity": 0,
+      "max_quantity": 1,
+      "default_quantity": 0
+    },
+    {
+      "external_id": "bacon",
+      "name": {
+        "translations": {
+          "en_us": "Bacon",
+          "es_es": "Tocino"
+        }
+      },
+      "price_change": 200,
+      "tax_change": 16,
+      "min_quantity": 0,
+      "max_quantity": 2,
+      "default_quantity": 0
+    },
+    {
+      "external_id": "small_soda",
+      "name": {
+        "translations": {
+          "en_us": "Small",
+          "es_es": "Pequeño"
+        }
+      },
+      "price_change": 0,
+      "tax_change": 0,
+      "min_quantity": 0,
+      "max_quantity": 1,
+      "default_quantity": 1
+    },
+    {
+      "external_id": "large_soda",
+      "name": {
+        "translations": {
+          "en_us": "Large",
+          "es_es": "Grande"
+        }
+      },
+      "price_change": 100,
+      "tax_change": 8,
+      "min_quantity": 0,
+      "max_quantity": 1,
+      "default_quantity": 0
+    },
+    {
+      "external_id": "lager",
+      "name": {
+        "translations": {
+          "en_us": "Lager",
+          "es_es": "Lager"
+        }
+      },
+      "price_change": 0,
+      "tax_change": 0,
+      "min_quantity": 0,
+      "max_quantity": 1,
+      "default_quantity": 1
+    },
+    {
+      "external_id": "ale",
+      "name": {
+        "translations": {
+          "en_us": "Ale",
+          "es_es": "Ale"
+        }
+      },
+      "price_change": 100,
+      "tax_change": 8,
+      "min_quantity": 0,
+      "max_quantity": 1,
+      "default_quantity": 0
+    }
+  ]
+}
