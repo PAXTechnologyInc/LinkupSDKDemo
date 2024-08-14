@@ -78,6 +78,7 @@ public class MainActivity extends Activity {
                     mPermissionList.add(permissions[i]);
                 } else {
                     LogUtil.d("already grant permission:" + permissions[i]);
+                    jumpToHome(Constant.DEV_CON);
                 }
             }
 
