@@ -42,7 +42,6 @@ public class MainActivity extends Activity {
                 LogUtil.d("init onSuccess");
                 requestPermission();
                 initDeviceInfo();
-                jumpToHome(Constant.DEV_CON);
             }
 
             @Override
@@ -112,6 +111,7 @@ public class MainActivity extends Activity {
                 }
             }
         }
+        jumpToHome(Constant.DEV_CON);
     }
 
     private void initDeviceInfo() {

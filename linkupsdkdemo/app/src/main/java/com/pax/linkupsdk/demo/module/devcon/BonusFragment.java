@@ -4,8 +4,12 @@ import static com.pax.linkupsdk.demo.Tools.checkNoDevice;
 import static com.pax.linkupsdk.demo.ViewLog.addErrLog;
 import static com.pax.linkupsdk.demo.ViewLog.addLog;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +20,8 @@ import android.widget.GridView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.pax.egarden.devicekit.MiscHelper;
@@ -24,6 +30,20 @@ import com.pax.linkdata.cmd.LinkException;
 import com.pax.linkupsdk.demo.DemoApplication;
 import com.pax.linkupsdk.demo.R;
 import com.pax.linkupsdk.demo.WorkExecutor;
+import com.pax.linkupsdk.demo.module.devcon.utils.IndicatorUtil;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 public class BonusFragment extends Fragment {
     private final Context mContext;
@@ -31,7 +51,8 @@ public class BonusFragment extends Fragment {
     // list of the names of available functionalities
     private static final String[] mListInfo = new String[]{
             "rebootDevice",
-            "getDeviceInfo"
+            "getDeviceInfo",
+            "uploadMenu"
     };
 
     public BonusFragment(Context context) {
@@ -60,6 +81,7 @@ public class BonusFragment extends Fragment {
                     getDeviceInfo();
                     break;
                 case 2:
+                    uploadMenu();
                     break;
                 default:
                     break;
@@ -67,6 +89,101 @@ public class BonusFragment extends Fragment {
         });
 
         return fragmentView;
+    }
+
+    private void uploadMenu() {
+        try {
+            if(DemoApplication.getSelectedFileList().isEmpty()){
+                addLog("Please select the menu json file first.");
+                return;
+            }
+            String localFile = DemoApplication.getSelectedFileList().get(0);
+            if(!localFile.endsWith(".json")){
+                addLog("Only support json file.");
+                return;
+            }
+
+            File file = new File(localFile);
+            InputStream is = null;
+            try {
+                is = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            String json = new String(buffer, StandardCharsets.UTF_8);
+            System.out.println("Json read: " + json);
+
+            sendPostRequest("425239780", "testAPIKey", json);
+
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void sendPostRequest(final String storeId, final String apiKey, final String json) {
+
+
+        new Thread(() -> {
+            addLog("uploading menu");
+            HttpURLConnection conn = null;
+            BufferedReader reader = null;
+
+            try {
+                requireActivity().runOnUiThread(() -> IndicatorUtil.showSpin(requireActivity(), "Uploading Menu"));
+
+                String url = "https://dev-api-dev.up.railway.app/v1/stores/" + storeId + "/menu_configuration/";
+                URL urlObj = new URL(url);
+                conn = (HttpURLConnection) urlObj.openConnection();
+
+                // 设置请求方法为POST
+                conn.setRequestMethod("POST");
+                // 设置请求的内容类型
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("x-api-key", apiKey);
+
+                // 获取OutputStream，准备发送请求体数据
+                OutputStream os = conn.getOutputStream();
+                os.write(json.getBytes());
+                os.flush();
+                os.close();
+
+                // 获取服务器的响应码
+                int responseCode = conn.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    final String responseStr = response.toString();
+                    System.out.println("resp: " + responseStr);
+                    addLog("uploading menu resp: " + responseStr);
+                } else {
+                    addLog("uploading menu failed");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                requireActivity().runOnUiThread(IndicatorUtil::hideSpin);
+            }
+        }).start();
     }
 
     /*
