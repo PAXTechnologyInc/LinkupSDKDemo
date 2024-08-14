@@ -4,9 +4,12 @@ import static com.pax.linkupsdk.demo.Tools.checkNoDevice;
 import static com.pax.linkupsdk.demo.ViewLog.addErrLog;
 import static com.pax.linkupsdk.demo.ViewLog.addLog;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +20,8 @@ import android.widget.GridView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.pax.egarden.devicekit.MiscHelper;
@@ -28,6 +33,9 @@ import com.pax.linkupsdk.demo.WorkExecutor;
 import com.pax.linkupsdk.demo.module.devcon.utils.IndicatorUtil;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -85,8 +93,32 @@ public class BonusFragment extends Fragment {
 
     private void uploadMenu() {
         try {
-            AssetManager assetManager = requireActivity().getAssets();
-            InputStream is = assetManager.open("demo.json");
+            // if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+            //         != PackageManager.PERMISSION_GRANTED) {
+
+            //     ActivityCompat.requestPermissions(requireActivity(),
+            //             new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+            //             2);
+            // }
+
+
+            if(DemoApplication.getSelectedFileList().isEmpty()){
+                addLog("Please select the menu json file first.");
+                return;
+            }
+            String localFile = DemoApplication.getSelectedFileList().get(0);
+            if(!localFile.endsWith(".json")){
+                addLog("Only support json file.");
+                return;
+            }
+
+            File file = new File(localFile);
+            InputStream is = null;
+            try {
+                is = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
@@ -94,7 +126,7 @@ public class BonusFragment extends Fragment {
             String json = new String(buffer, StandardCharsets.UTF_8);
             System.out.println("Json read: " + json);
 
-            sendPostRequest("https://dev-api-dev.up.railway.app/v1/stores/425239780/menu_configuration/", json);
+            sendPostRequest("425239780", "testAPIKey", json);
 
 
         } catch (IOException ex) {
@@ -102,7 +134,9 @@ public class BonusFragment extends Fragment {
         }
     }
 
-    public void sendPostRequest(final String url, final String json) {
+    public void sendPostRequest(final String storeId, final String apiKey, final String json) {
+
+
         new Thread(() -> {
             addLog("uploading menu");
             HttpURLConnection conn = null;
@@ -111,6 +145,7 @@ public class BonusFragment extends Fragment {
             try {
                 requireActivity().runOnUiThread(() -> IndicatorUtil.showSpin(requireActivity(), "Uploading Menu"));
 
+                String url = "https://dev-api-dev.up.railway.app/v1/stores/" + storeId + "/menu_configuration/";
                 URL urlObj = new URL(url);
                 conn = (HttpURLConnection) urlObj.openConnection();
 
@@ -118,7 +153,7 @@ public class BonusFragment extends Fragment {
                 conn.setRequestMethod("POST");
                 // 设置请求的内容类型
                 conn.setRequestProperty("Content-Type", "application/json");
-                conn.setRequestProperty("x-api-key", "testAPIKey");
+                conn.setRequestProperty("x-api-key", apiKey);
 
                 // 获取OutputStream，准备发送请求体数据
                 OutputStream os = conn.getOutputStream();

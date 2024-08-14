@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.pax.linkupsdk.demo.R;
 
-public class Indicator {
+public class IndicatorUtil {
     private static Dialog spinnerDialog;
 
     public static void showSpin(Activity activity, String message) {

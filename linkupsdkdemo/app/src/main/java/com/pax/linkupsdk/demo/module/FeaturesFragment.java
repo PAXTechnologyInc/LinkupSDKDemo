@@ -98,12 +98,12 @@ public class FeaturesFragment extends Fragment {
                 showFragment(new AdFragment(mContext));
             });
             buttonBonus.setOnClickListener(v -> {
-                // Hide the "Select file" and "Select Target file" buttons on the left pane
-                requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.GONE);
+                // Show the "Select file" and "Select Target file" buttons on the left pane
+                requireActivity().findViewById(R.id.layout_select_file).setVisibility(View.VISIBLE);
                 // Show the section of "Selected devices" on the top of the right pane
                 requireActivity().findViewById(R.id.layout_select_device).setVisibility(View.VISIBLE);
-                // Hide the section of "Selected files" on the top of the right pane
-                requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.GONE);
+                // Show the section of "Selected files" on the top of the right pane
+                requireActivity().findViewById(R.id.select_file_layout).setVisibility(View.VISIBLE);
                 resetAllBtnColor(btns, otherButtonColorState);
                 v.setBackgroundTintList(currentButtonColorState);
 
