@@ -2,6 +2,8 @@ package com.pax.linkupsdk.demo.module.devcon;
 
 
 import android.content.Context;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 
 import androidx.annotation.NonNull;
@@ -22,7 +23,6 @@ import androidx.fragment.app.Fragment;
 import com.google.gson.Gson;
 import com.pax.egarden.devicekit.PrinterHelper;
 import com.pax.egarden.devicekit.ScannerHelper;
-import com.pax.linkdata.ResultListener;
 import com.pax.linkdata.ScannerDataListener;
 import com.pax.linkdata.cmd.printer.CommandChannelRequestContent;
 import com.pax.linkdata.deviceinfo.component.Printer;
@@ -37,20 +37,19 @@ import com.pax.linkupsdk.demo.module.devcon.models.Item;
 import com.pax.linkupsdk.demo.module.devcon.models.TransDetail;
 import com.pax.linkupsdk.demo.module.devcon.utils.IndicatorUtil;
 import com.pax.poslink.CommSetting;
+import com.pax.poslink.LogSetting;
 import com.pax.poslink.PaymentRequest;
 import com.pax.poslink.PaymentResponse;
 import com.pax.poslink.PosLink;
-import com.pax.poslink.ProcessTransResult;
 import com.pax.poslink.constant.EDCType;
 import com.pax.poslink.constant.TransType;
 import com.pax.poslink.poslink.POSLinkCreator;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.pax.linkupsdk.demo.ViewLog.addErrLog;
 import static com.pax.linkupsdk.demo.ViewLog.addLog;
@@ -72,6 +71,7 @@ public class PosFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        setPoslinkLog();
         mDeviceHelper = DeviceHelper.getInstance(getContext());
         mPrinterHelper = PrinterHelper.getInstance(getContext());
         mScannerHelper = ScannerHelper.getInstance(getContext());
@@ -82,16 +82,16 @@ public class PosFragment extends Fragment {
         gridView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             switch (position) {
                 case 0:
-                    queryOnlineDeviceList();
+                    detectDevices();
                     break;
                 case 1:
-                    scan();
+                    scanSKU();
                     break;
                 case 2:
-                    pay();
+                    payment();
                     break;
                 case 3:
-                    print(TransDetail.DEMO_TRANS_DETAIL, null);
+                    printReceipt(TransDetail.DEMO_TRANS_DETAIL, null);
                     break;
                 default:
                     break;
@@ -114,9 +114,20 @@ public class PosFragment extends Fragment {
     }
 
     /**
+     * Set up log for debugging purpose.
+     */
+    private void setPoslinkLog(){
+        LogSetting.setLogMode(true);  // Open or close log
+        LogSetting.setLevel(LogSetting.LOGLEVEL.DEBUG);  // Set log level
+        LogSetting.setLogFileName("POSLinkLog");  // Set the file name of output log
+        LogSetting.setOutputPath("log/log");  // Set path for output log
+        LogSetting.setLogDays("30");  // Keep log for 30 days
+    }
+
+    /**
      * Display online linked devices.
      */
-    private void queryOnlineDeviceList() {
+    private void detectDevices() {
         try {
             // get linked device list
             List<LinkDevice> linkedDeviceList = mDeviceHelper.queryOnlineDeviceList();
@@ -171,7 +182,7 @@ public class PosFragment extends Fragment {
     /**
      * Scan barcode.
      */
-    private void scan() {
+    private void scanSKU() {
         try {
             // get L1400
             LinkDevice elys = mDeviceHelper.getSelfDeviceInfo();
@@ -188,7 +199,16 @@ public class PosFragment extends Fragment {
                 @Override
                 public void onMessage(int code, String message, String listenerOwner) {
                     //  handle scan result
-                    mainHandler.post(() -> handleScanResult(message));
+                    mainHandler.post(() -> {
+                        Item item = SKU_MAP.getOrDefault(message, null);
+                        if (item != null) {
+                            addLog("Item scanned: " + item);
+                            cartListener.onItemAdded(item);
+                        } else {
+                            addLog("No item matched for scanned code: " + message);
+                        }
+                        IndicatorUtil.hideSpin();
+                    });
                 }
             });
         } catch (LinkException e) {
@@ -215,7 +235,7 @@ public class PosFragment extends Fragment {
     /**
      * Do the payment.
      */
-    private void pay() {
+    private void payment() {
         // get item list from HomeActivity
         List<Item> cartItems = ((HomeActivity) requireActivity()).getCartItems();
         // generate request from cart
@@ -223,28 +243,23 @@ public class PosFragment extends Fragment {
 
         // init POSLink
         PosLink poslink = initializePosLink();
-        if (poslink == null) {
-            throw new RuntimeException("POSLink init failed");
-        }
         poslink.PaymentRequest = request;
 
         new Thread(() -> {
-            requireActivity().runOnUiThread(() -> IndicatorUtil.showSpin(requireActivity(), "Please scan item."));
+            requireActivity().runOnUiThread(() -> IndicatorUtil.showSpin(requireActivity(), "Processing payment, please wait."));
             // do transaction
             poslink.ProcessTrans();
-
+            requireActivity().runOnUiThread(IndicatorUtil::hideSpin);
             // get response
             PaymentResponse paymentResponse = poslink.PaymentResponse;
             // transaction failed
             if (paymentResponse == null) {
-                IndicatorUtil.hideSpin();
+                addLog("Transaction failed");
                 return;
             }
-
             // handle result
             requireActivity().runOnUiThread(() -> {
                 handleTransactionResult(paymentResponse, cartItems);
-                IndicatorUtil.hideSpin();
             });
         }).start();
     }
@@ -255,31 +270,41 @@ public class PosFragment extends Fragment {
      * @return poslink that is ready to do transaction
      */
     private PosLink initializePosLink() {
-        // get A3700
-        LinkDevice a3700 = getA3700();
-        if (a3700 == null) {
-            addLog("No A3700 detected.");
-            return null;
-        }
-
-        // get IP to do the TCP COMM transaction
-        String ip = a3700.getLinkIP();
-        if (ip.isEmpty()) {
-            addLog("No IP found");
-            return null;
-        }
-
         // set up POSLink
         PosLink poslink = POSLinkCreator.createPoslink(requireContext());
         CommSetting commSetting = new CommSetting();
-        commSetting.setType(CommSetting.TCP);
-        commSetting.setDestIP(ip);
-        commSetting.setDestPort("10009");
+        commSetting.setType(CommSetting.USB); // can be ip connection
+        commSetting.setBaudRate("9600");
         commSetting.setTimeOut("60000");
         commSetting.setEnableProxy(true);
+
+        String deviceName = getA3700DeviceName();
+        commSetting.setDeviceName(deviceName);
         poslink.SetCommSetting(commSetting);
 
         return poslink;
+    }
+
+    /**
+     * Get device name of A3700 from all usb connected devices
+     *
+     * @return device name
+     */
+    private String getA3700DeviceName() {
+        String a3700DeviceName = "";
+        UsbManager usbManager = (UsbManager) requireContext().getSystemService(Context.USB_SERVICE);
+
+        // get all usb connected devices
+        HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+
+        for (UsbDevice device : deviceList.values()) {
+            if ("A3700".equalsIgnoreCase(device.getProductName())) {
+                a3700DeviceName = device.getDeviceName();
+                break;
+            }
+        }
+
+        return a3700DeviceName;
     }
 
     /**
@@ -310,11 +335,23 @@ public class PosFragment extends Fragment {
      * @param paymentResponse response from POSLink transaction
      */
     private void handleTransactionResult(PaymentResponse paymentResponse, List<Item> cartItems) {
+        if (paymentResponse == null) {
+            addLog("Payment failed");
+            return;
+        }
+
+        Gson gson = new Gson();
+        String respStr = gson.toJson(paymentResponse);
+        addLog("Payment Response: " + respStr);
+
         if ("000000".equalsIgnoreCase(paymentResponse.ResultCode)) {
             TransDetail transDetail = new TransDetail(getTotalItemsPriceStr(cartItems), paymentResponse.ResultCode, paymentResponse.Message, paymentResponse.ApprovedAmount, paymentResponse.BogusAccountNum, paymentResponse.CardType, paymentResponse.HostCode, paymentResponse.RefNum, paymentResponse.Timestamp, cartItems);
-            print(transDetail, cartItems);
+            printReceipt(transDetail, cartItems);
             cartItems.clear();
             cartListener.onDeleteAll();
+            addLog("Payment success.");
+        } else {
+            addLog("Payment failed");
         }
     }
 
@@ -324,7 +361,7 @@ public class PosFragment extends Fragment {
      * @param transDetail
      * @param items
      */
-    private void print(TransDetail transDetail, List<Item> items) {
+    private void printReceipt(TransDetail transDetail, List<Item> items) {
         try {
             // generate receipt content
             String content = generateReceiptContent(transDetail, items);
@@ -422,6 +459,7 @@ public class PosFragment extends Fragment {
 
     /**
      * Get the pretty string of transaction detail on the receipt.
+     *
      * @param transDetail
      * @return formatted string
      */
@@ -431,11 +469,12 @@ public class PosFragment extends Fragment {
 
     /**
      * Find certain device based on model among linked devices.
+     *
      * @param devices
      * @param modelName
      * @param getModelFunc
-     * @return
      * @param <T>
+     * @return
      */
     private <T> T findDeviceModel(List<T> devices, String modelName, Function<T, String> getModelFunc) {
         return devices.stream()

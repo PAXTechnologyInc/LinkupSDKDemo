@@ -117,7 +117,7 @@ public class BonusFragment extends Fragment {
             String json = new String(buffer, StandardCharsets.UTF_8);
             System.out.println("Json read: " + json);
 
-            sendPostRequest("425239780", "testAPIKey", json);
+            sendPostRequest("store_07TqXV2hGL7e6QQzX1DvM", "testAPIKey2", json);
 
 
         } catch (IOException ex) {
