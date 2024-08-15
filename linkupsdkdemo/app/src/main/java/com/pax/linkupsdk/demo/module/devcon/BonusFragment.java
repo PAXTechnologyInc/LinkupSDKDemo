@@ -167,9 +167,10 @@ public class BonusFragment extends Fragment {
                     }
                     final String responseStr = response.toString();
                     System.out.println("resp: " + responseStr);
-                    addLog("uploading menu resp: " + responseStr);
+                    addLog("Uploading menu resp: " + responseStr);
+                    addLog("Uploading menu done, please check on the portal.");
                 } else {
-                    addLog("uploading menu failed");
+                    addLog("Uploading menu failed.");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
