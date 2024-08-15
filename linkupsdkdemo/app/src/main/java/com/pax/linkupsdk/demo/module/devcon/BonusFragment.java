@@ -88,8 +88,12 @@ public class BonusFragment extends Fragment {
         return fragmentView;
     }
 
+    /**
+     *  Upload menu json to server.
+     */
     private void uploadMenu() {
         try {
+            // get the menu file
             if(DemoApplication.getSelectedFileList().isEmpty()){
                 addLog("Please select the menu json file first.");
                 return;
@@ -111,17 +115,23 @@ public class BonusFragment extends Fragment {
             byte[] buffer = new byte[size];
             is.read(buffer);
             is.close();
+
+            // get menu json string
             String json = new String(buffer, StandardCharsets.UTF_8);
-            System.out.println("Json read: " + json);
 
+            // send to server
             sendPostRequest("store_07TqXV2hGL7e6QQzX1DvM", "testAPIKey2", json);
-
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
+    /**
+     * Upload menu to serve.
+     * @param storeId unique store id
+     * @param apiKey unique api key
+     * @param json menu json string
+     */
     public void sendPostRequest(final String storeId, final String apiKey, final String json) {
 
 
@@ -136,20 +146,17 @@ public class BonusFragment extends Fragment {
                 String url = "https://dev-api-dev.up.railway.app/v1/stores/" + storeId + "/menu_configuration/";
                 URL urlObj = new URL(url);
                 conn = (HttpURLConnection) urlObj.openConnection();
-
-                // 设置请求方法为POST
                 conn.setRequestMethod("POST");
-                // 设置请求的内容类型
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setRequestProperty("x-api-key", apiKey);
 
-                // 获取OutputStream，准备发送请求体数据
+                // get OutputStream，ready to send
                 OutputStream os = conn.getOutputStream();
                 os.write(json.getBytes());
                 os.flush();
                 os.close();
 
-                // 获取服务器的响应码
+                // get response from server
                 int responseCode = conn.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -160,9 +167,10 @@ public class BonusFragment extends Fragment {
                     }
                     final String responseStr = response.toString();
                     System.out.println("resp: " + responseStr);
-                    addLog("uploading menu resp: " + responseStr);
+                    addLog("Uploading menu resp: " + responseStr);
+                    addLog("Uploading menu done, please check on the portal.");
                 } else {
-                    addLog("uploading menu failed");
+                    addLog("Uploading menu failed.");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -177,7 +185,6 @@ public class BonusFragment extends Fragment {
                         e.printStackTrace();
                     }
                 }
-
                 requireActivity().runOnUiThread(IndicatorUtil::hideSpin);
             }
         }).start();
