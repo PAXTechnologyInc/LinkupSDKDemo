@@ -12,10 +12,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
 
 import com.pax.egarden.devicekit.LinkUpSdk;
-import com.pax.egarden.devicekit.MiscHelper;
 import com.pax.linkdata.InitListener;
 import com.pax.util.LogUtil;
 import com.pax.egarden.devicekit.DeviceHelper;
@@ -42,6 +40,7 @@ public class MainActivity extends Activity {
                 LogUtil.d("init onSuccess");
                 requestPermission();
                 initDeviceInfo();
+                jumpToHome(Constant.DEV_CON);
             }
 
             @Override

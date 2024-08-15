@@ -4,12 +4,8 @@ import static com.pax.linkupsdk.demo.Tools.checkNoDevice;
 import static com.pax.linkupsdk.demo.ViewLog.addErrLog;
 import static com.pax.linkupsdk.demo.ViewLog.addLog;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,10 +16,9 @@ import android.widget.GridView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.pax.egarden.devicekit.DeviceHelper;
 import com.pax.egarden.devicekit.MiscHelper;
 import com.pax.linkdata.LinkDevice;
 import com.pax.linkdata.cmd.LinkException;
@@ -43,10 +38,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
+import java.util.List;
 
 public class BonusFragment extends Fragment {
     private final Context mContext;
+    private final DeviceHelper mDeviceHelper;
 
     // list of the names of available functionalities
     private static final String[] mListInfo = new String[]{
@@ -57,6 +53,7 @@ public class BonusFragment extends Fragment {
 
     public BonusFragment(Context context) {
         this.mContext = context;
+        mDeviceHelper = DeviceHelper.getInstance(mContext);
     }
 
     @Override
@@ -117,7 +114,7 @@ public class BonusFragment extends Fragment {
             String json = new String(buffer, StandardCharsets.UTF_8);
             System.out.println("Json read: " + json);
 
-            sendPostRequest("425239780", "testAPIKey", json);
+            sendPostRequest("store_07TqXV2hGL7e6QQzX1DvM", "testAPIKey2", json);
 
 
         } catch (IOException ex) {
@@ -227,15 +224,36 @@ public class BonusFragment extends Fragment {
         }
 
         // Retrieve the selected device
-        final LinkDevice linkDevice = DemoApplication.getSelectedDeviceList().get(0);
-        // Set the component ID to the selected device (only scanner and printer have component ID)
-        if (!TextUtils.isEmpty(DemoApplication.getSelectedComponentID())) {
-            linkDevice.setCurrentComponentID(DemoApplication.getSelectedComponentID());
-        } else {
-            linkDevice.setCurrentComponentID("");
+        final LinkDevice oldSelected = DemoApplication.getSelectedDeviceList().get(0);
+        LinkDevice newSelected = null;
+        try {
+            // Find all online linked devices and compare the ID and name with the selected device.
+            // Same device will have the same ID and name. LinkIP address might be changed.
+            List<LinkDevice> linkDeviceList = mDeviceHelper.queryOnlineDeviceList();
+            for(LinkDevice d : linkDeviceList) {
+                if (d.getDeviceID().equals(oldSelected.getDeviceID())
+                        && d.getDeviceName().equalsIgnoreCase(oldSelected.getDeviceName())) {
+                    newSelected = d;
+                    break;
+                }
+            }
+        } catch (LinkException e) {
+            addLog(String.format("Failed to query online devices - %1$s:%2$s", e.getErrCode(), e.getErrMsg()));
+            return;
+        }
+
+        if (newSelected != null) {
+            // Set the component ID to the selected device (only scanner and printer have component ID)
+            if (!TextUtils.isEmpty(DemoApplication.getSelectedComponentID()))
+                newSelected.setCurrentComponentID(DemoApplication.getSelectedComponentID());
+            else
+                newSelected.setCurrentComponentID("");
+        }
+        else {
+            newSelected = DemoApplication.getSelectedDeviceList().get(0);
         }
         // Show a message to the message area on the bottom half of the right pane
-        addLog(String.format("Retrieve Device Info: %1$s", toString(linkDevice)));
+        addLog(String.format("Device Info: %1$s", toString(newSelected)));
     }
 
     /*
