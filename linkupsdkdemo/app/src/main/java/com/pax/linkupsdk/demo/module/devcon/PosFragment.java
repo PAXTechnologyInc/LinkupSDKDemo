@@ -12,14 +12,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.gson.Gson;
 import com.pax.egarden.devicekit.PrinterHelper;
 import com.pax.egarden.devicekit.ScannerHelper;
+import com.pax.linkdata.ResultListener;
 import com.pax.linkdata.ScannerDataListener;
 import com.pax.linkdata.cmd.printer.CommandChannelRequestContent;
 import com.pax.linkdata.deviceinfo.component.Printer;
@@ -37,6 +40,7 @@ import com.pax.poslink.CommSetting;
 import com.pax.poslink.PaymentRequest;
 import com.pax.poslink.PaymentResponse;
 import com.pax.poslink.PosLink;
+import com.pax.poslink.ProcessTransResult;
 import com.pax.poslink.constant.EDCType;
 import com.pax.poslink.constant.TransType;
 import com.pax.poslink.poslink.POSLinkCreator;
@@ -45,6 +49,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.pax.linkupsdk.demo.ViewLog.addErrLog;
 import static com.pax.linkupsdk.demo.ViewLog.addLog;

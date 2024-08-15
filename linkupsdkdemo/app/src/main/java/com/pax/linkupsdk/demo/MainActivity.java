@@ -12,8 +12,10 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 
 import com.pax.egarden.devicekit.LinkUpSdk;
+import com.pax.egarden.devicekit.MiscHelper;
 import com.pax.linkdata.InitListener;
 import com.pax.util.LogUtil;
 import com.pax.egarden.devicekit.DeviceHelper;
