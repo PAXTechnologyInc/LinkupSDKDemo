@@ -1,9 +1,6 @@
 package com.pax.linkupsdk.demo.module.devcon.models;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-public class Item implements Parcelable {
+public class Item {
     public String name;
     public String description;
     public String price;
@@ -26,19 +23,5 @@ public class Item implements Parcelable {
                 ", price='" + price + '\'' +
                 ", sku='" + sku + '\'' +
                 '}';
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
-        dest.writeString(description);
-        dest.writeString(price);
-        dest.writeString(sku);
-        dest.writeInt(imgId);
     }
 }
