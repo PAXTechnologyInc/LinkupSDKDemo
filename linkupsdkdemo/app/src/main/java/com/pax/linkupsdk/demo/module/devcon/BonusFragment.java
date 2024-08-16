@@ -119,8 +119,8 @@ public class BonusFragment extends Fragment {
             // get menu json string
             String json = new String(buffer, StandardCharsets.UTF_8);
 
-            // send to server
-            sendPostRequest("store_07TqXV2hGL7e6QQzX1DvM", "testAPIKey2", json);
+            // send to Uptrillion cloud, must use valid storeId and apiKey
+            sendPostRequest("store_07TqXV2hGL7e6QQzX1DvM", "A7dG8kLm4Q", json);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
