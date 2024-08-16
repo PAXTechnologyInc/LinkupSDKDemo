@@ -120,7 +120,7 @@ public class PosFragment extends Fragment {
         LogSetting.setLogMode(true);  // Open or close log
         LogSetting.setLevel(LogSetting.LOGLEVEL.DEBUG);  // Set log level
         LogSetting.setLogFileName("POSLinkLog");  // Set the file name of output log
-        LogSetting.setOutputPath("log/log");  // Set path for output log
+        LogSetting.setOutputPath("/storage/emulated/0/Documents/log");  // Set path for output log
         LogSetting.setLogDays("30");  // Keep log for 30 days
     }
 
