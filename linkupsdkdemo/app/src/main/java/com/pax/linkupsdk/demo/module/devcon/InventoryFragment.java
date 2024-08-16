@@ -42,7 +42,7 @@ public class InventoryFragment extends Fragment {
         LinearLayout container = view.findViewById(R.id.item_container);
 
         // items in a Const file
-        Item[] items = {Consts.PEN, Consts.PAPER, Consts.NOTEBOOK, Consts.CHOCOLATE};
+        Item[] items = {Consts.APPLE, Consts.BANANA, Consts.COFFEE, Consts.CUPCAKE};
 
         // add view
         for (int i = 0; i < items.length; i++) {

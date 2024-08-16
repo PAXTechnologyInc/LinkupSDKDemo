@@ -8,16 +8,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Consts {
-    public static Item PEN = new Item("Pen", "Black Ink Pen", "1.75", "123", R.drawable.black_ink_pen);
-    public static Item PAPER = new Item("PAPER", "3 Ring Paper", "1.35", "456", R.drawable.three_ring_paper);
-    public static Item NOTEBOOK = new Item("NOTEBOOK", "Spiral Notebook", "3.00", "789", R.drawable.spiral_notebook);
-    public static Item CHOCOLATE = new Item("CHOCOLATE", "Chocolate Bar", "1.15", "010", R.drawable.chocolate_bar);
+    public static Item APPLE = new Item("APPLE", "Red Apple", "0.85", "123", R.drawable.apple);
+    public static Item BANANA = new Item("BANANA", "Yellow Banana", "0.75", "456", R.drawable.banana);
+    public static Item COFFEE = new Item("COFFEE", "Hot Coffee", "2.50", "789", R.drawable.coffee);
+    public static Item CUPCAKE = new Item("CUPCAKE", "Vanilla Cupcake", "2.00", "020", R.drawable.cupcake);
+
     private static Map<String, Item> createSkuMap() {
         HashMap<String, Item> map = new HashMap<>();
-        map.put("123", PEN);
-        map.put("456", PAPER);
-        map.put("789", NOTEBOOK);
-        map.put("010", CHOCOLATE);
+        map.put("123", APPLE);
+        map.put("456", BANANA);
+        map.put("789", COFFEE);
+        map.put("010", CUPCAKE);
         return Collections.unmodifiableMap(map);
     }
     public static final Map<String, Item> SKU_MAP = createSkuMap();
