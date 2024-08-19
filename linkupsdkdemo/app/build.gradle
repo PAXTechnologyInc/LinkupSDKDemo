@@ -12,7 +12,7 @@ android {
     compileSdkVersion 31
     buildToolsVersion "28.0.3"
     defaultConfig {
-        applicationId "com.pax.linkupsdk.demo"
+        applicationId "com.pax.linkupsdk.demo.devcon"
         minSdkVersion 24
         targetSdkVersion 24
         versionCode 6
